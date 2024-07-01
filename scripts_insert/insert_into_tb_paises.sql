@@ -139,6 +139,7 @@ values ('Abecásia',5)                            --Europa
       ,('Liechtenstein',5)                       --Europa
       ,('Lituânia',5)                            --Europa
       ,('Luxemburgo',5)                          --Europa
+      ,('Macau',2)                               --Ásia
       ,('Macedônia',5)                           --Europa
       ,('Macedônia do Norte',5)                  --Europa
       ,('Madagascar',1)                          --África
