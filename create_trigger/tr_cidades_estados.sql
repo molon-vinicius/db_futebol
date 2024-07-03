@@ -1,8 +1,7 @@
 /* A priori só coloquei a validação de obrigação de preenchimento da coluna 'ID_Estado' para cidades do Brasil, que são as únicas informações da tabela referência
 até então. Posteriormente, caso haja interesse de cadastramento de estados de outros países, a trigger abaixo irá validar se o estado informado corresponde ao país
 no momento do INSERT ou UPDATE. Para tornar obrigatório o cadastramento de estados, basta alterar o primeiro bloco 'IF', trocando o '=' por IN, adicionando o nome 
-dos países desejados.
-*/
+dos países desejados */
 
 create trigger tr_cidades_estados on tb_cidades
 for insert, update 
