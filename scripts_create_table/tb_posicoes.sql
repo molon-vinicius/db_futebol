@@ -1,0 +1,6 @@
+CREATE TABLE tb_posicoes
+(ID_Posicao INT IDENTITY(1,1) PRIMARY KEY NOT NULL
+,Sigla_Posicao VARCHAR(3) NOT NULL
+,Descricao_Posicao VARCHAR(30) NOT NULL)
+
+GO
