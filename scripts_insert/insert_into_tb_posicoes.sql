@@ -1,0 +1,15 @@
+insert into tb_posicoes
+           (Sigla_Posicao
+		       ,Descricao_Posicao)
+	  values ('GK','Goalkeeper')
+         , ('CB','Centre Back')
+         , ('SB','Side Back')
+         , ('SW','Sweeper')
+         , ('WB','Wing Back')
+         , ('DM','Defensive Midfielder')
+         , ('CM','Centre Midfielder')
+         , ('SM','Side Midfielder')
+         , ('AM','Attacking Midfielder')
+         , ('WF','Wing Forward')
+         , ('SS','Second Strike')
+         , ('CF','Center Forward')
