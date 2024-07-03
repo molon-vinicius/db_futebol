@@ -1,0 +1,8 @@
+CREATE TABLE tb_tecnicos
+(ID_Tecnico INT IDENTITY(1,1) PRIMARY KEY NOT NULL
+,ID_Pessoa INT NULL) 
+GO
+
+ALTER TABLE tb_tecnicos WITH CHECK ADD FOREIGN KEY(ID_Pessoa)
+REFERENCES tb_pessoas (ID_Pessoa)
+GO
