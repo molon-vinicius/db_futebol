@@ -1,0 +1,5 @@
+CREATE TABLE tb_tipos_eventos
+(ID_Tipo_Evento INT IDENTITY(1,1) PRIMARY KEY NOT NULL
+,Descricao VARCHAR(30) NOT NULL)
+
+GO
