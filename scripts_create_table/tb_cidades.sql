@@ -12,3 +12,6 @@ GO
 ALTER TABLE tb_cidades WITH CHECK ADD FOREIGN KEY(ID_Pais)
 REFERENCES tb_paises (ID_Pais)
 GO
+
+ALTER TABLE tb_cidades ADD CONSTRAINT uq_cidades UNIQUE (Nome_Cidade, ID_estado, ID_Pais)
+GO
