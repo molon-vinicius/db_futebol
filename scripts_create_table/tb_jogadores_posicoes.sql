@@ -53,3 +53,5 @@ GO
 ALTER TABLE tb_jogadores_posicoes WITH CHECK ADD FOREIGN KEY(ID_Jogador)
 REFERENCES tb_jogadores (ID_Jogador)
 GO
+
+alter table tb_jogadores_posicoes add constraint uq_jogadores_posicoes unique (ID_Jogador)
