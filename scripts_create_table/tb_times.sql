@@ -3,7 +3,8 @@ CREATE TABLE tb_times
 ,Nome_Time VARCHAR(128) NOT NULL
 ,Nome_Reduzido VARCHAR(60) NOT NULL
 ,ID_Cidade INT NOT NULL
-,Data_Fundacao VARCHAR(10))
+,Data_Fundacao VARCHAR(10)
+,Data_Encerramento VARCHAR(10))
 
 ALTER TABLE tb_times WITH CHECK ADD FOREIGN KEY(ID_Cidade)
 REFERENCES tb_cidades (ID_Cidade)
