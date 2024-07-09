@@ -1,7 +1,7 @@
-create trigger tr_selecoes_elencos on tb_selecoes_elencos
+alter trigger tr_selecoes_elencos on tb_selecoes_elencos
 for insert, update 
  
-as
+as 
 
 begin
 
@@ -11,44 +11,46 @@ declare @ID_jogador int
 declare @camisa varchar(2)
 declare @nome_camisa varchar(20)
 declare @retorno varchar(100)
+declare @ID_selecao_dupla_cidadania int
+declare @ID_selecao_pais_nasc int
 
     select @ID_camp_edicao = ID_Campeonato_Edicao
          , @ID_selecao     = ID_Selecao
          , @ID_jogador     = ID_Jogador
          , @camisa         = Camisa 
-		     , @nome_camisa    = Nome_Camisa
+  	 , @nome_camisa    = Nome_Camisa
       from inserted    with(nolock)
 
-   if not exists (
-      select a.ID_Selecao
+    select @ID_selecao_pais_nasc       = e.ID_Selecao
+         , @ID_selecao_dupla_cidadania = g.ID_Selecao
+      from tb_jogadores  a with(nolock)
+      join tb_pessoas    b with(nolock)on b.ID_Pessoa = a.ID_Pessoa
+      join tb_cidades    c with(nolock)on c.ID_Cidade = b.ID_Cidade_Nascimento
+      join tb_paises     d with(nolock)on d.ID_Pais = c.ID_Pais
+      join tb_selecoes   e with(nolock)on e.Nome_Selecao = d.Nome_Pais
+ left join tb_paises     f with(nolock)on f.ID_Pais = b.Dupla_Cidadania
+ left join tb_selecoes   g with(nolock)on g.Nome_Selecao = f.Nome_Pais
+     where a.ID_Jogador = @ID_jogador
+
+   if (
+      select count(distinct a.ID_Selecao) as qtd
         from inserted                             a with(nolock)
         join tb_campeonatos_edicoes_selecoes_part b with(nolock)on b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
+                                                               and b.ID_Selecao = a.ID_Selecao
        where b.ID_Campeonato_Edicao = @ID_camp_edicao
-   )
+         and b.ID_Selecao = @ID_selecao   ) = 0
    begin
       raiserror ('Seleção não participante dessa edição do campeonato.', 11, 127)
 	  rollback transaction      
    end
 
-   if not exists (
-      select isnull(d.ID_Pais, g.ID_Pais)
-        --from inserted             a with(nolock)
-		from tb_selecoes_elencos  a with(nolock)
-    join tb_jogadores         b	with(nolock)on b.ID_Jogador = a.ID_Jogador
-    join tb_pessoas           c with(nolock)on c.ID_Pessoa = b.ID_Pessoa
-         /* Verifica país de dupla cidadania */
-		join tb_paises            d with(nolock)on d.ID_Pais = c.Dupla_Cidadania
-		join tb_selecoes          e with(nolock)on e.Nome_Selecao = d.Nome_Pais
-         /* Verifica país de nascimento */
-    join tb_cidades           f with(nolock)on f.ID_Cidade = c.ID_Cidade_Nascimento
-		join tb_paises            g with(nolock)on g.ID_Pais = f.ID_Pais
-		join tb_selecoes          h with(nolock)on h.Nome_Selecao = g.Nome_Pais
-   where b.ID_Jogador = @ID_jogador )
+   if  ( isnull(@ID_selecao_dupla_cidadania,0) <> @ID_selecao ) 
+   and ( @ID_selecao_pais_nasc <> @ID_selecao ) 
    begin
       set @retorno = (
- 	    select concat('O jogador ''', b.Nome_Reduzido ,''' não pode ser inserido nessa seleção, pois não possui essa nacionalidade.')
+      select concat('O jogador ''', b.Nome_Reduzido ,''' não pode ser inserido nessa seleção, pois não possui essa nacionalidade.')
         from tb_jogadores a with(nolock)
-	     	join tb_pessoas   b with(nolock)on b.ID_Pessoa = a.ID_Pessoa
+        join tb_pessoas   b with(nolock)on b.ID_Pessoa = a.ID_Pessoa
        where a.ID_Jogador = @ID_jogador
 	  )
       raiserror (@retorno, 11, 127)
