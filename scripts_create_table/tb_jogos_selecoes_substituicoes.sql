@@ -3,6 +3,7 @@ CREATE TABLE tb_jogos_selecoes_substituicoes
 ,ID_Jogo_Selecao NUMERIC(15) NOT NULL
 ,ID_Selecao INT NOT NULL
 ,Minuto TINYINT NULL
+,Acrescimos TINYINT NULL
 ,ID_Jogador_Saida INT NOT NULL
 ,ID_Jogador_Entrada INT NOT NULL)
 
