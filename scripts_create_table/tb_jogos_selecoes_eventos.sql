@@ -1,10 +1,10 @@
 CREATE TABLE tb_jogos_selecoes_eventos
 (ID_Jogo_Selecao_Evento NUMERIC(15) IDENTITY(1,1) PRIMARY KEY NOT NULL
-,ID_Jogo_Selecao NUMERIC(15) NULL
-,ID_Tipo_Evento INT NULL
+,ID_Jogo_Selecao NUMERIC(15) NOT NULL
+,ID_Tipo_Evento INT NOT NULL
 ,Minuto TINYINT NULL
-,ID_Selecao INT NULL
-,ID_Jogador INT NULL
+,ID_Selecao INT NOT NULL
+,ID_Jogador INT NOT NULL
 ,Observacao VARCHAR(100) NULL)
 
 
