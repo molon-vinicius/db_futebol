@@ -1,5 +1,5 @@
-create trigger tr_jogos_sel_subst 
-            on tb_jogos_selecoes_substituicoes
+alter trigger tr_jogos_sel_subst 
+           on tb_jogos_selecoes_substituicoes
 for insert, update 
  
 as
@@ -13,7 +13,7 @@ declare @id_jgd_sai  int
 declare @id_anf      int
 declare @id_vis      int 
 declare @minuto      tinyint
-declare @retorno     varchar(100)
+declare @retorno     varchar(150)
 
       select @id_jogo_sel = ID_Jogo_Selecao
            , @id_selecao  = ID_Selecao
@@ -47,7 +47,7 @@ declare @retorno     varchar(100)
      rollback transaction
   end
 
-  if not exists (  
+  if (  
      select b.ID_Jogador  as qtd 
        from tb_jogos_selecoes            a with(nolock)
        join tb_selecoes_elencos          b with(nolock)on b.ID_Selecao = a.ID_Selecao_Anfitriao
@@ -71,13 +71,13 @@ declare @retorno     varchar(100)
         and a.ID_Selecao_Visitante = @id_selecao
         and a.ID_Jogo_Selecao = @id_jogo_sel 
         and b.ID_Jogador = @id_jgd_ent
-	  )
+	  ) is null
   begin
   set @retorno = (
       select concat('O jogador de entrada ''', b.Nome_Reduzido ,''' é inválido, pois não faz parte do elenco ou já está entre os titulares da partida.')
         from tb_jogadores a with(nolock)
         join tb_pessoas   b with(nolock)on b.ID_Pessoa = a.ID_Pessoa
-       where a.ID_Jogador = @id_jgd_sai
+       where a.ID_Jogador = @id_jgd_ent
 	  )
      raiserror (@retorno, 11, 127)
      rollback transaction
