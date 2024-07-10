@@ -40,17 +40,6 @@ declare @retorno     varchar(100)
      rollback transaction
   end
 
-  if exists (
-     select 1
-       from tb_jogos_selecoes_substituicoes
-      where ID_Jogo_Selecao = @id_jogo_sel
-        and ID_Jogador_Saida = @id_jgd_ent
-  )
-  begin
-     raiserror ('Jogador que saiu anteriormente no mesmo jogo não pode voltar para a partida.', 11, 127)
-     rollback transaction
-  end
-
   if  @id_selecao <> @id_anf
   and @id_selecao <> @id_vis
   begin
@@ -120,6 +109,15 @@ declare @retorno     varchar(100)
      rollback transaction
   end
 
+  if exists (
+     select 1
+       from tb_jogos_selecoes_substituicoes
+      where ID_Jogo_Selecao = @id_jogo_sel
+        and ID_Jogador_Saida = @id_jgd_ent
+  )
+  begin
+     raiserror ('Jogador que saiu anteriormente no mesmo jogo não pode voltar para a partida.', 11, 127)
+     rollback transaction
+  end
 
 end
-
