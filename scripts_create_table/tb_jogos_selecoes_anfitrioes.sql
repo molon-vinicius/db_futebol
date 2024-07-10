@@ -4,11 +4,11 @@ CREATE TABLE tb_jogos_selecoes_anfitrioes
 ,ID_Selecao INT NOT NULL
 ,ID_Jogador INT NOT NULL)
 
-ALTER TABLE tb_jogos_selecoes_anfitrioes WITH CHECK ADD FOREIGN KEY(ID_jogo_selecao)
-REFERENCES tb_jogos_selecoes (ID_jogo_selecao)
+ALTER TABLE tb_jogos_selecoes_anfitrioes WITH CHECK ADD FOREIGN KEY(ID_Jogo_Selecao)
+REFERENCES tb_jogos_selecoes (ID_Jogo_Selecao)
 GO
 
-ALTER TABLE tb_jogos_selecoes_anfitrioes WITH CHECK ADD FOREIGN KEY(ID_jogador)
+ALTER TABLE tb_jogos_selecoes_anfitrioes WITH CHECK ADD FOREIGN KEY(ID_Jogador)
 REFERENCES tb_jogadores (ID_Jogador)
 GO
 
