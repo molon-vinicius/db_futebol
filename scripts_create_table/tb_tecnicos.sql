@@ -6,3 +6,6 @@ GO
 ALTER TABLE tb_tecnicos WITH CHECK ADD FOREIGN KEY(ID_Pessoa)
 REFERENCES tb_pessoas (ID_Pessoa)
 GO
+
+ALTER TABLE tb_tecnicos ADD CONSTRAINT UQ_tecnicos UNIQUE (ID_Pessoa)
+GO
