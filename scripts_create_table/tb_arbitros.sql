@@ -5,3 +5,6 @@ CREATE TABLE tb_arbitros
 ALTER TABLE tb_arbitros WITH CHECK ADD FOREIGN KEY(ID_Pessoa)
 REFERENCES tb_pessoas (ID_Pessoa)
 GO
+
+ALTER TABLE tb_arbitros ADD CONSTRAINT UQ_arbitros UNIQUE (ID_Pessoa)
+GO
