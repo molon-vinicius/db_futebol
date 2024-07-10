@@ -11,6 +11,9 @@ ALTER TABLE tb_jogadores WITH CHECK ADD FOREIGN KEY(ID_Pessoa)
 REFERENCES tb_pessoas (ID_Pessoa)
 GO
 
+ALTER TABLE tb_jogadores ADD CONSTRAINT UQ_jogadores UNIQUE (ID_Pessoa)
+GO
+
 ALTER TABLE tb_jogadores ADD CONSTRAINT df_ambidestro DEFAULT ('N') FOR Ambidestro
 GO
 
