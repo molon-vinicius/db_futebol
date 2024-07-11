@@ -54,9 +54,10 @@ declare @retorno     varchar(150)
                                                       and b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
   left join tb_jogos_selecoes_anfitrioes c with(nolock)on c.ID_Selecao = b.ID_Selecao
                                                       and c.ID_Jogador = b.ID_Jogador
+                                                      and c.ID_Jogo_Selecao = a.ID_Jogo_Selecao
       where c.ID_Jogador is null
         and a.ID_Selecao_Anfitriao = @id_selecao
-	and a.ID_Jogo_Selecao = @id_jogo_sel 
+        and a.ID_Jogo_Selecao = @id_jogo_sel 
         and b.ID_Jogador = @id_jgd_ent
 	
       union all
@@ -67,9 +68,10 @@ declare @retorno     varchar(150)
                                                       and b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
   left join tb_jogos_selecoes_visitantes c with(nolock)on c.ID_Selecao = b.ID_Selecao
                                                       and c.ID_Jogador = b.ID_Jogador
+                                                      and c.ID_Jogo_Selecao = a.ID_Jogo_Selecao
       where c.ID_Jogador is null
         and a.ID_Selecao_Visitante = @id_selecao
-	    and a.ID_Jogo_Selecao = @id_jogo_sel 
+        and a.ID_Jogo_Selecao = @id_jogo_sel 
         and b.ID_Jogador = @id_jgd_ent
 	  ) is null
   begin
@@ -87,7 +89,8 @@ declare @retorno     varchar(150)
   if not exists (  
      select b.ID_Jogador  as qtd 
        from tb_jogos_selecoes            a with(nolock)
-	   join tb_jogos_selecoes_anfitrioes b with(nolock)on b.ID_Selecao = a.ID_Selecao_Anfitriao
+       join tb_jogos_selecoes_anfitrioes b with(nolock)on b.ID_Selecao = a.ID_Selecao_Anfitriao
+                                                      and b.ID_Jogo_Selecao = a.ID_Jogo_Selecao
       where a.ID_Jogo_Selecao = @id_jogo_sel
         and b.ID_Jogador = @id_jgd_sai
 		
@@ -95,7 +98,8 @@ declare @retorno     varchar(150)
 
      select b.ID_Jogador  as qtd 
        from tb_jogos_selecoes            a with(nolock)
-	   join tb_jogos_selecoes_visitantes b with(nolock)on b.ID_Selecao = a.ID_Selecao_Visitante
+       join tb_jogos_selecoes_visitantes b with(nolock)on b.ID_Selecao = a.ID_Selecao_Visitante
+                                                      and b.ID_Jogo_Selecao = a.ID_Jogo_Selecao
       where a.ID_Jogo_Selecao = @id_jogo_sel
         and b.ID_Jogador = @id_jgd_sai
 	  )
@@ -123,3 +127,4 @@ declare @retorno     varchar(150)
   end
 
 end
+
