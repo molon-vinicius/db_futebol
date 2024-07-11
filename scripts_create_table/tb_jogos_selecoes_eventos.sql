@@ -3,7 +3,10 @@ CREATE TABLE tb_jogos_selecoes_eventos
 ,ID_Jogo_Selecao NUMERIC(15) NOT NULL
 ,ID_Tipo_Evento INT NOT NULL
 ,Minuto TINYINT NULL
-,Acrescimos TINYINT NULL
+,Acrescimos_45 TINYINT NULL
+,Acrescimos_90 TINYINT NULL
+,Acrescimos_105 TINYINT NULL
+,Acrescimos_120 TINYINT NULL
 ,ID_Selecao INT NOT NULL
 ,ID_Jogador INT NOT NULL
 ,Observacao VARCHAR(100) NULL)
