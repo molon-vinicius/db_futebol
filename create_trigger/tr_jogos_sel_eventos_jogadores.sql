@@ -5,6 +5,7 @@ for insert, update
 as
 
 begin
+
 declare @id_camp_ed  int
 declare @id_jogo_sel int
 declare @id_evento   int
@@ -13,13 +14,15 @@ declare @id_jogador  int
 declare @id_anf      int
 declare @id_vis      int 
 declare @minuto      tinyint
+declare @minuto_ent  int
+declare @minuto_sai  int
 declare @retorno     varchar(150)
 
       select @id_jogo_sel = ID_Jogo_Selecao
            , @id_evento   = ID_Tipo_Evento
            , @id_selecao  = ID_Selecao
            , @id_jogador  = ID_Jogador
-		       , @minuto      = Minuto
+           , @minuto      = Minuto
         from inserted
 
       select @id_camp_ed = a.ID_Campeonato_Edicao
@@ -27,6 +30,18 @@ declare @retorno     varchar(150)
            , @id_vis     = a.ID_Selecao_Visitante  
         from tb_jogos_selecoes  a with(nolock)
        where a.ID_Jogo_Selecao = @id_jogo_sel
+
+      select @minuto_ent = a.Minuto
+        from tb_jogos_selecoes_substituicoes a with(nolock)
+       where a.ID_Jogo_Selecao = @id_jogo_sel
+         and a.ID_Selecao = @id_selecao
+         and a.ID_Jogador_Entrada = @id_jogador
+
+      select @minuto_sai = a.Minuto
+        from tb_jogos_selecoes_substituicoes a with(nolock)
+       where a.ID_Jogo_Selecao = @id_jogo_sel
+         and a.ID_Selecao = @id_selecao
+         and a.ID_Jogador_Saida = @id_jogador
 
   if @minuto > 120
   or @minuto = 0
@@ -63,7 +78,7 @@ begin
 
      select b.ID_Jogador  as qtd 
        from tb_jogos_selecoes            a with(nolock)
-	     join tb_jogos_selecoes_anfitrioes b with(nolock)on b.ID_Selecao = a.ID_Selecao_Anfitriao
+       join tb_jogos_selecoes_anfitrioes b with(nolock)on b.ID_Selecao = a.ID_Selecao_Anfitriao
                                                       and b.ID_Jogo_Selecao = a.ID_Jogo_Selecao
       where a.ID_Jogo_Selecao = @id_jogo_sel
         and a.ID_Selecao_Anfitriao = @id_selecao
@@ -73,32 +88,12 @@ begin
 
      select b.ID_Jogador  as qtd 
        from tb_jogos_selecoes            a with(nolock)
-	     join tb_jogos_selecoes_visitantes b with(nolock)on b.ID_Selecao = a.ID_Selecao_Visitante
+       join tb_jogos_selecoes_visitantes b with(nolock)on b.ID_Selecao = a.ID_Selecao_Visitante
                                                       and b.ID_Jogo_Selecao = a.ID_Jogo_Selecao
       where a.ID_Jogo_Selecao = @id_jogo_sel
         and a.ID_Selecao_Visitante = @id_selecao
         and b.ID_Jogador = @id_jogador
 	  
-      union all
-
-     select b.ID_Jogador  as qtd 
-       from tb_jogos_selecoes            a with(nolock)
-       join tb_jogos_selecoes_anfitrioes b with(nolock)on b.ID_Jogo_Selecao = a.ID_Jogo_Selecao
-                                                      and b.ID_Selecao = a.ID_Selecao_Anfitriao  
-      where a.ID_Selecao_Anfitriao = @id_selecao
-	      and a.ID_Jogo_Selecao = @id_jogo_sel 
-        and b.ID_Jogador = @id_jogador
-	
-      union all
-
-     select b.ID_Jogador  as qtd 
-       from tb_jogos_selecoes            a with(nolock)
-       join tb_jogos_selecoes_visitantes b with(nolock)on b.ID_Jogo_Selecao = a.ID_Jogo_Selecao
-                                                      and b.ID_Selecao = a.ID_Selecao_Visitante
-      where a.ID_Selecao_Visitante = @id_selecao
-	      and a.ID_Jogo_Selecao = @id_jogo_sel 
-        and b.ID_Jogador = @id_jogador
-
       union all
 
      select b.ID_Jogador  as qtd 
@@ -108,7 +103,7 @@ begin
        join tb_jogos_selecoes_substituicoes c with(nolock)on c.ID_Selecao = b.ID_Selecao
                                                          and c.ID_jogador_entrada = b.ID_Jogador
       where a.ID_Selecao_Anfitriao = @id_selecao
-	      and a.ID_Jogo_Selecao = @id_jogo_sel 
+        and a.ID_Jogo_Selecao = @id_jogo_sel 
         and b.ID_Jogador = @id_jogador
 
       union all
@@ -120,7 +115,7 @@ begin
        join tb_jogos_selecoes_substituicoes c with(nolock)on c.ID_Selecao = b.ID_Selecao
                                                          and c.ID_Jogador_Entrada = b.ID_Jogador
       where a.ID_Selecao_Visitante = @id_selecao
-	      and a.ID_Jogo_Selecao = @id_jogo_sel 
+        and a.ID_Jogo_Selecao = @id_jogo_sel 
         and b.ID_Jogador = @id_jogador
 
 	  )
@@ -134,6 +129,32 @@ begin
   if @retorno is null begin set @retorno = 'Jogador informado não existe.' end 
      raiserror (@retorno, 11, 127)
      rollback transaction
+  end
+
+  if @minuto_ent is not null
+  and @minuto < @minuto_ent
+  begin
+     set @retorno = (
+         select concat('O jogador ''', b.Nome_Reduzido , ''' entrou aos ', @minuto_ent ,''', não é possível salvar esse tipo de evento antes do minuto informado.')
+           from tb_jogadores a with(nolock)
+           join tb_pessoas   b with(nolock)on b.ID_Pessoa = a.ID_Pessoa
+          where a.ID_Jogador = @id_jogador
+	     )
+     raiserror (@retorno, 11, 127)
+     rollback transaction
+  end
+
+  if @minuto_sai is not null
+  and @minuto > @minuto_sai
+  begin
+     set @retorno = (
+         select concat('O jogador ''', b.Nome_Reduzido , ''' saiu aos ', @minuto_sai ,''', não é possível salvar esse tipo de evento após o minuto informado.')
+           from tb_jogadores a with(nolock)
+           join tb_pessoas   b with(nolock)on b.ID_Pessoa = a.ID_Pessoa
+          where a.ID_Jogador = @id_jogador
+	     )
+     raiserror (@retorno, 11, 127)
+     rollback transaction  
   end
 
  end
