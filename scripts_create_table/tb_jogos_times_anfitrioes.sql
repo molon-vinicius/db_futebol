@@ -15,3 +15,6 @@ GO
 ALTER TABLE tb_jogos_times_anfitrioes WITH CHECK ADD FOREIGN KEY(ID_Time)
 REFERENCES tb_times (ID_Time)
 GO
+
+ALTER TABLE tb_jogos_times_anfitrioes ADD CONSTRAINT UQ_jogos_time_anf UNIQUE (ID_Jogo_Selecao, ID_Selecao, ID_Jogador)
+GO
