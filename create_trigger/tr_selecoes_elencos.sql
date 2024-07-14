@@ -4,7 +4,7 @@ for insert, update
 as 
 
 begin
-
+declare @ID_campeonato int
 declare @ID_camp_edicao int
 declare @ID_selecao int
 declare @ID_jogador int
@@ -18,8 +18,12 @@ declare @ID_selecao_pais_nasc int
          , @ID_selecao     = ID_Selecao
          , @ID_jogador     = ID_Jogador
          , @camisa         = Camisa 
-  	 , @nome_camisa    = Nome_Camisa
+         , @nome_camisa    = Nome_Camisa
       from inserted    with(nolock)
+
+    select @ID_campeonato  = ID_Campeonato
+      from tb_campeonatos_edicoes with(nolock)
+     where ID_Campeonato = @ID_campeonato
 
     select @ID_selecao_pais_nasc       = e.ID_Selecao
          , @ID_selecao_dupla_cidadania = g.ID_Selecao
@@ -32,16 +36,19 @@ declare @ID_selecao_pais_nasc int
  left join tb_selecoes   g with(nolock)on g.Nome_Selecao = f.Nome_Pais
      where a.ID_Jogador = @ID_jogador
 
+
+ if @ID_campeonato > 0
+  begin
    if (
       select count(distinct a.ID_Selecao) as qtd
         from inserted                             a with(nolock)
         join tb_campeonatos_edicoes_selecoes_part b with(nolock)on b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
-                                                               and b.ID_Selecao = a.ID_Selecao
+	                                                           and b.ID_Selecao = a.ID_Selecao
        where b.ID_Campeonato_Edicao = @ID_camp_edicao
          and b.ID_Selecao = @ID_selecao   ) = 0
    begin
       raiserror ('Seleção não participante dessa edição do campeonato.', 11, 127)
-	  rollback transaction      
+      rollback transaction      
    end
 
    if  ( isnull(@ID_selecao_dupla_cidadania,0) <> @ID_selecao ) 
@@ -54,19 +61,19 @@ declare @ID_selecao_pais_nasc int
        where a.ID_Jogador = @ID_jogador
 	  )
       raiserror (@retorno, 11, 127)
-	  rollback transaction
+      rollback transaction
    end
 
    if isnumeric(@camisa) = 0
    begin  
       raiserror ('A coluna ''Camisa'' só aceita caracteres numéricos.', 11, 127)
-	  rollback transaction
+      rollback transaction
    end
 
    if @camisa = 0
    begin  
       raiserror ('A coluna ''Camisa'' não pode ser preenchida com o número zero.', 11, 127)
-	  rollback transaction
+      rollback transaction
    end
 
    if (select dbo.fn_valida_string(@nome_camisa)) is not null
@@ -75,5 +82,7 @@ declare @ID_selecao_pais_nasc int
       raiserror (@retorno, 11, 127)
       rollback transaction
    end
-   
+     
+  end
+
 end 
