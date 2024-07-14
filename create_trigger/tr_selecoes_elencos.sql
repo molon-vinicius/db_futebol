@@ -1,4 +1,5 @@
-alter trigger tr_selecoes_elencos on tb_selecoes_elencos
+create trigger tr_selecoes_elencos 
+            on tb_selecoes_elencos
 for insert, update 
  
 as 
@@ -36,21 +37,21 @@ declare @ID_selecao_pais_nasc int
  left join tb_selecoes   g with(nolock)on g.Nome_Selecao = f.Nome_Pais
      where a.ID_Jogador = @ID_jogador
 
-
  if @ID_campeonato > 0
   begin
-   if (
+    if (
       select count(distinct a.ID_Selecao) as qtd
         from inserted                             a with(nolock)
         join tb_campeonatos_edicoes_selecoes_part b with(nolock)on b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
 	                                                           and b.ID_Selecao = a.ID_Selecao
        where b.ID_Campeonato_Edicao = @ID_camp_edicao
          and b.ID_Selecao = @ID_selecao   ) = 0
-   begin
-      raiserror ('Seleção não participante dessa edição do campeonato.', 11, 127)
-      rollback transaction      
-   end
-
+      begin
+          raiserror ('Seleção não participante dessa edição do campeonato.', 11, 127)
+          rollback transaction      
+      end	
+  end
+	
    if  ( isnull(@ID_selecao_dupla_cidadania,0) <> @ID_selecao ) 
    and ( @ID_selecao_pais_nasc <> @ID_selecao ) 
    begin
@@ -82,7 +83,5 @@ declare @ID_selecao_pais_nasc int
       raiserror (@retorno, 11, 127)
       rollback transaction
    end
-     
-  end
-
+	
 end 
