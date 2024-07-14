@@ -24,7 +24,7 @@ declare @ID_selecao_pais_nasc int
 
     select @ID_campeonato  = ID_Campeonato
       from tb_campeonatos_edicoes with(nolock)
-     where ID_Campeonato = @ID_campeonato
+     where ID_Campeonato_Edicao = @ID_camp_edicao
 
     select @ID_selecao_pais_nasc       = e.ID_Selecao
          , @ID_selecao_dupla_cidadania = g.ID_Selecao
