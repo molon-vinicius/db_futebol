@@ -5,7 +5,7 @@ for insert, update
 as
 
 begin
-
+declare @ID_campeonato int
 declare @id_camp_ed int
 declare @id_arb     int
 declare @id_arb_1   int
@@ -26,6 +26,12 @@ declare @retorno    varchar(150)
              , @id_vis     = ID_Selecao_Visitante
           from inserted
 
+        select @ID_campeonato  = ID_Campeonato
+          from tb_campeonatos_edicoes with(nolock)
+         where ID_Campeonato_Edicao = @id_camp_ed
+
+  if @ID_campeonato > 0
+  begin
     if (
 	   select 1
          from tb_campeonatos_edicoes_selecoes_part
@@ -47,12 +53,13 @@ declare @retorno    varchar(150)
        raiserror ('Seleção visitante informada não é um participante deste campeonato.', 11, 127)
        rollback transaction
     end
+  end
 
-  if @id_arb = @id_arb_1
-	or @id_arb = @id_arb_2
-	or @id_arb = @id_arb_3
-	or @id_arb = @id_arb_4
-	begin
+    if @id_arb = @id_arb_1
+    or @id_arb = @id_arb_2
+    or @id_arb = @id_arb_3
+    or @id_arb = @id_arb_4
+    begin
        set @retorno = (
            select concat('O árbitro ', b.Nome_Reduzido, ' foi inserido mais de uma vez.')
              from tb_arbitros  a with(nolock)
@@ -61,12 +68,12 @@ declare @retorno    varchar(150)
 	   )
        raiserror (@retorno, 11, 127)
        rollback transaction
-	end
+    end
 
-  if @id_arb_1 = @id_arb_2
-	or @id_arb_1 = @id_arb_3
-	or @id_arb_1 = @id_arb_4
-	begin
+    if @id_arb_1 = @id_arb_2
+    or @id_arb_1 = @id_arb_3
+    or @id_arb_1 = @id_arb_4
+    begin
        set @retorno = (
            select concat('O árbitro ', b.Nome_Reduzido, ' foi inserido mais de uma vez.')
              from tb_arbitros  a with(nolock)
@@ -75,11 +82,11 @@ declare @retorno    varchar(150)
 	   )
        raiserror (@retorno, 11, 127)
        rollback transaction
-	end
+    end
 
-  if @id_arb_2 = @id_arb_3
-	or @id_arb_2 = @id_arb_4
-	begin
+    if @id_arb_2 = @id_arb_3
+    or @id_arb_2 = @id_arb_4
+    begin
        set @retorno = (
            select concat('O árbitro ', b.Nome_Reduzido, ' foi inserido mais de uma vez.')
              from tb_arbitros  a with(nolock)
@@ -88,10 +95,10 @@ declare @retorno    varchar(150)
 	   )
        raiserror (@retorno, 11, 127)
        rollback transaction
-	end
+    end
 
-  if @id_arb_3 = @id_arb_4
-	begin
+    if @id_arb_3 = @id_arb_4
+    begin
        set @retorno = (
            select concat('O árbitro ', b.Nome_Reduzido, ' foi inserido mais de uma vez.')
              from tb_arbitros  a with(nolock)
@@ -100,6 +107,6 @@ declare @retorno    varchar(150)
 	   )
        raiserror (@retorno, 11, 127)
        rollback transaction
-	end
-
+    end
 end
+
