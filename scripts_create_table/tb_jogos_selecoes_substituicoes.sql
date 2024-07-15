@@ -22,3 +22,11 @@ GO
 ALTER TABLE tb_jogos_selecoes_substituicoes WITH CHECK ADD FOREIGN KEY(ID_selecao)
 REFERENCES tb_selecoes (ID_Selecao)
 GO
+
+ALTER TABLE tb_jogos_selecoes_substituicoes 
+ADD CONSTRAINT UQ_Jogos_Sel_Subst_Entrada UNIQUE (ID_Jogo_Selecao, ID_Selecao, ID_Jogador_Entrada)
+GO
+
+ALTER TABLE tb_jogos_selecoes_substituicoes 
+ADD CONSTRAINT UQ_Jogos_Sel_Subst_Saida UNIQUE (ID_Jogo_Selecao, ID_Selecao, ID_Jogador_Saida)
+GO
