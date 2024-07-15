@@ -33,8 +33,9 @@ insert into @elenco (camisa, capitao, id_jogador, nome_reduzido, id_posicao, pos
         from tb_jogos_selecoes            x with(nolock)
         join tb_selecoes_elencos          a with(nolock)on a.ID_selecao = x.ID_selecao_anfitriao
 	join tb_jogos_selecoes_anfitrioes b with(nolock)on b.ID_selecao = a.ID_selecao
-                                                       and b.ID_jogador = a.ID_jogador			                        										   and b.ID_jogo_selecao = x.ID_jogo_selecao
-        join vw_jogadores                 c with(nolock)on c.ID_jogador = a.ID_jogador
+                                                       and b.ID_jogador = a.ID_jogador			                        										   
+	                                               and b.ID_jogo_selecao = x.ID_jogo_selecao
+	join vw_jogadores                 c with(nolock)on c.ID_jogador = a.ID_jogador
         join tb_posicoes                  d with(nolock)on d.Sigla_Posicao = case when substring(a.posicoes,0,2) in ('R','L')
                                                                                   then substring(a.posicoes,2,2)
                                                                                   else substring(a.posicoes,0,3)
