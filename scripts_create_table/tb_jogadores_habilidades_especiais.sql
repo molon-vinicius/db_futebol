@@ -43,6 +43,8 @@ GO
 ALTER TABLE tb_jogadores_habilidades_especiais ADD  DEFAULT ('N') FOR Side
 GO
 
+ALTER TABLE tb_jogadores_habilidades_especiais ADD CONSTRAINT UQ_jog_hab_esp UNIQUE (ID_Jogador)  
+
 ALTER TABLE tb_jogadores_habilidades_especiais ADD  DEFAULT ('N') FOR Center
 GO
 
