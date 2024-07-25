@@ -96,3 +96,5 @@ GO
 
 ALTER TABLE tb_jogadores_habilidades_cards ADD  DEFAULT ('N') FOR S23_Super_Sub
 GO
+
+ALTER TABLE tb_jogadores_habilidades_cards ADD CONSTRAINT UQ_jog_hab_crd UNIQUE (ID_Jogador)
