@@ -81,4 +81,4 @@ GO
 ALTER TABLE tb_jogadores_habilidades_estilos ADD  DEFAULT ('N') FOR P19_Fox_in_the_Box
 GO
 
-ALTER TABLE tb_jogadores_habilidades_especiais ADD CONSTRAINT UQ_jog_hab_esp UNIQUE (ID_Jogador)
+ALTER TABLE tb_jogadores_habilidades_estilos ADD CONSTRAINT UQ_jog_hab_est UNIQUE (ID_Jogador)
