@@ -20,21 +20,19 @@ declare @id_sel        int
 
   if not exists (
      select 1
-       from tb_jogos_selecoes            a with(nolock) 
-       join tb_jogos_selecoes_anfitrioes b with(nolock)on b.ID_jogo_selecao = a.ID_jogo_selecao
-                                                      and a.ID_selecao_anfitriao = b.ID_selecao
-      where a.ID_jogo_selecao = @id_jogo_sel
+       from tb_jogos_selecoes   a with(nolock) 
+      where a.ID_jogo_selecao      = @id_jogo_sel
+        and a.ID_selecao_anfitriao = @id_sel
   )
   begin
-         raiserror ('Seleção anfitriã informada não participou da partida ou está cadastrada como seleção visitante.', 11, 127)
-	 rollback transaction
+     raiserror ('Seleção anfitriã informada não participou da partida ou está cadastrada como seleção visitante.', 11, 127)
+     rollback transaction
   end
   
   if @qtd_jogadores > 11
   begin
-         raiserror ('Quantidade de jogadores titulares já atingida.', 11, 127)
-	 rollback transaction
+     raiserror ('Quantidade de jogadores titulares já atingida.', 11, 127)
+     rollback transaction
   end
 
 end
-
