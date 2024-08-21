@@ -1,4 +1,4 @@
-create trigger tr_jogos_sel_vis 
+create trigger tr_jogos_sel_vis
             on tb_jogos_selecoes_visitantes
 for insert, update 
  
@@ -20,10 +20,9 @@ declare @id_sel        int
 
   if not exists (
      select 1
-       from tb_jogos_selecoes            a with(nolock) 
-       join tb_jogos_selecoes_visitantes b with(nolock)on b.ID_jogo_selecao = a.ID_jogo_selecao
-                                                      and a.ID_selecao_visitante = b.ID_selecao
-      where a.ID_jogo_selecao = @id_jogo_sel
+       from tb_jogos_selecoes   a with(nolock) 
+      where a.ID_jogo_selecao      = @id_jogo_sel
+        and a.ID_selecao_visitante = @id_sel
   )
   begin
      raiserror ('Seleção visitante informada não participou da partida ou está cadastrada como seleção anfitriã.', 11, 127)
@@ -37,4 +36,3 @@ declare @id_sel        int
   end
 
 end
-
