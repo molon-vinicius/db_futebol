@@ -9,9 +9,11 @@ begin
 declare @id_jogo_sel   int 
 declare @qtd_jogadores int 
 declare @id_sel        int 
+declare @id_jogador    int 
 
        select @id_jogo_sel = ID_jogo_selecao
             , @id_sel      = ID_selecao
+            , @id_jogador  = ID_Jogador
          from inserted
 
        select @qtd_jogadores = count(a.ID_jogador)
@@ -28,7 +30,21 @@ declare @id_sel        int
      raiserror ('Seleção visitante informada não participou da partida ou está cadastrada como seleção anfitriã.', 11, 127)
      rollback transaction
   end
-  
+
+  if not exists(
+     select 1
+       from tb_jogos_selecoes    a with(nolock)
+       join tb_selecoes_elencos  b with(nolock)on b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
+                                              and b.ID_Selecao = a.ID_Selecao_Visitante
+      where a.ID_Jogo_Selecao = @id_jogo_sel
+        and a.ID_selecao_visitante = @id_sel
+        and b.ID_Jogador = @id_jogador		
+     )
+  begin
+     raiserror ('Jogador não pertencente a seleção visitante.', 11, 127)
+     rollback transaction
+  end
+
   if @qtd_jogadores > 11
   begin
      raiserror ('Quantidade de jogadores titulares já atingida.', 11, 127)
