@@ -53,3 +53,7 @@ GO
 ALTER TABLE tb_jogos_selecoes WITH CHECK ADD FOREIGN KEY(ID_Selecao_Anfitriao)
 REFERENCES tb_selecoes (ID_Selecao)
 GO
+
+ALTER TABLE tb_jogos_selecoes
+ADD UNIQUE (Data_Jogo, ID_Campeonato_Edicao, ID_Estadio, ID_Selecao_Anfitriao, ID_Selecao_Visitante)
+GO
