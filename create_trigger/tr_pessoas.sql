@@ -1,4 +1,4 @@
-create trigger tr_pessoas
+CREATE trigger tr_pessoas
             on tb_pessoas
 for insert, update 
   
@@ -29,25 +29,28 @@ declare @retorno      varchar(150)
        rollback transaction
     end
 	
-    if len(@dt_nasc) < 10
+    if len(@dt_nasc) > 10	
     or try_convert(date, @dt_nasc) is null
     begin
        raiserror ('Formato da data de nascimento é inválido.', 11, 127)
        rollback transaction
     end
 
-    if len(@dt_obt) < 10
+    if len(@dt_obt) > 10
     or try_convert(date, @dt_obt) is null
     begin
        raiserror ('Formato da data de óbito é inválido.', 11, 127)
        rollback transaction
     end
 
-    if convert(date, @dt_nasc) > convert(date, @dt_obt)
-    or convert(date, @dt_nasc) = convert(date, @dt_obt)
+    if @dt_nasc <> '01/01/1000' and @dt_obt <> '01/01/1000'
     begin
-       raiserror ('A ordem cronológica das datas de nascimento e de óbito estão incorretas.', 11, 127)
-       rollback transaction
+      if convert(date, @dt_nasc) > convert(date, @dt_obt)
+      or convert(date, @dt_nasc) = convert(date, @dt_obt)
+      begin
+         raiserror ('A ordem cronológica das datas de nascimento e de óbito estão incorretas.', 11, 127)
+         rollback transaction
+      end
     end
 
 end
