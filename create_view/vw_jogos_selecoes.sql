@@ -78,5 +78,5 @@ as
                , src.Observacao
                , src.ID_campeonato_edicao     
                , ce.Ano
-			   , c.Descricao
-			   , p.Nome_Pais
+               , c.Descricao
+               , p.Nome_Pais
