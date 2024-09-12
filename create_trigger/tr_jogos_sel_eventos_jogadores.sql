@@ -103,7 +103,7 @@ begin
        join tb_jogos_selecoes_substituicoes c with(nolock)on c.ID_Selecao = b.ID_Selecao
                                                          and c.ID_jogador_entrada = b.ID_Jogador
       where a.ID_Selecao_Anfitriao = @id_selecao
-        and a.ID_Jogo_Selecao = @id_jogo_sel 
+	and a.ID_Jogo_Selecao = @id_jogo_sel 
         and b.ID_Jogador = @id_jogador
 
       union all
@@ -115,20 +115,25 @@ begin
        join tb_jogos_selecoes_substituicoes c with(nolock)on c.ID_Selecao = b.ID_Selecao
                                                          and c.ID_Jogador_Entrada = b.ID_Jogador
       where a.ID_Selecao_Visitante = @id_selecao
-        and a.ID_Jogo_Selecao = @id_jogo_sel 
+	and a.ID_Jogo_Selecao = @id_jogo_sel 
         and b.ID_Jogador = @id_jogador
-
 	  )
-  begin
-  set @retorno = (
-      select concat('O jogador ''', b.Nome_Reduzido ,''' não faz parte do elenco ou não entrou durante a partida.')
-        from tb_jogadores a with(nolock)
-        join tb_pessoas   b with(nolock)on b.ID_Pessoa = a.ID_Pessoa
-       where a.ID_Jogador = @id_jogador
-	  )
-  if @retorno is null begin set @retorno = 'Jogador informado não existe.' end 
-     raiserror (@retorno, 11, 127)
-     rollback transaction
+  begin     
+     if @id_evento <> 8
+     begin
+         set @retorno = ( 
+         select concat('O jogador ''', b.Nome_Reduzido ,''' não faz parte do elenco ou não entrou durante a partida.')
+           from tb_jogadores a with(nolock)
+           join tb_pessoas   b with(nolock)on b.ID_Pessoa = a.ID_Pessoa
+          where a.ID_Jogador = @id_jogador
+	     )
+          if @retorno is null 
+          begin 
+            set @retorno = 'Jogador informado não existe.' 
+          end 
+        raiserror (@retorno, 11, 127)
+        rollback transaction
+     end
   end
 
   if @minuto_ent is not null
@@ -157,6 +162,33 @@ begin
      rollback transaction  
   end
 
- end
+  if @id_evento = 8
+  begin
+    if @id_selecao = @id_anf
+    and not exists ( 
+        select a.ID_Jogador
+          from tb_jogos_selecoes_visitantes  a with(nolock)
+         where a.ID_Jogo_Selecao = @id_jogo_sel
+           and a.ID_Jogador = @id_jogador
+	)
+    begin
+       raiserror ('Não é possível contabilizar o gol contra, pois o jogador informado não faz parte do time adversário, .', 11, 127)
+       rollback transaction
+    end
+    if @id_selecao = @id_vis
+	and not exists ( 
+	    select a.ID_Jogador
+          from tb_jogos_selecoes_anfitrioes  a with(nolock)
+         where a.ID_Jogo_Selecao = @id_jogo_sel
+           and a.ID_Jogador = @id_jogador
+	)
+    begin
+       raiserror ('Não é possível contabilizar o gol contra, pois o jogador informado não faz parte do time adversário, .', 11, 127)
+       rollback transaction
+    end
+
+  end
+
+end
 
 end
