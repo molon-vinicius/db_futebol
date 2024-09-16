@@ -23,9 +23,9 @@ declare @selecoes table
                  join tb_selecoes                  d with(nolock)on d.ID_Selecao = b.ID_Selecao  
                 where ID_Jogador = @id_jogador
 
-				union 
+                union 
 
-				select distinct
+               select distinct
                       b.ID_Jogador
                     , d.Nome_Selecao
                     , c.Ano
@@ -42,9 +42,9 @@ begin
    begin
 
     select @ano = min(Ano) from @selecoes 
-	     set @retorno = @retorno + (select concat(Ano, '-', Nome_Selecao, ' ' ) from @selecoes where Ano = @ano )
+       set @retorno = @retorno + (select concat(Ano, ' ', Nome_Selecao, ' ' ) from @selecoes where Ano = @ano )
 
-	   delete from @selecoes where Ano = @ano
+    delete from @selecoes where Ano = @ano
    end
    
      set @retorno = rtrim(@retorno)
@@ -60,9 +60,9 @@ begin
    begin
 
     select @ano = min(Ano) from @selecoes 
-	     set @retorno = @retorno + (select concat(Ano, '/') from @selecoes where Ano = @ano )
+       set @retorno = @retorno + (select concat(Ano, '/') from @selecoes where Ano = @ano )
 
-	   delete from @selecoes where Ano = @ano
+    delete from @selecoes where Ano = @ano
    end
    
    set @retorno = substring(@retorno,0,len(@retorno)) + ' ' + @sel
