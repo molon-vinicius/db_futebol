@@ -6,6 +6,7 @@ as
            , a.ID_Jogador                    as ID_Jogador
            , d.Nome_Reduzido                 as Jogador
            , e.Nome_Selecao                  as Selecao
+           , dbo.fn_jogadores_posicoes(a.ID_Jogador) as Posicoes	
            , isnull(f.Jogos, 0) 
            + isnull(g.Jogos, 0)              as Jogos
            , count(a.ID_jogo_selecao_evento) as Gols
@@ -18,7 +19,7 @@ as
         join vw_jogadores              d with(nolock)on d.ID_jogador = a.ID_jogador
         join tb_selecoes               e with(nolock)on e.ID_Selecao = a.ID_selecao
    left join (
-		       select count(a.ID_Jogo_Selecao) as Jogos
+               select count(a.ID_Jogo_Selecao) as Jogos
                     , b.ID_Jogador
                     , a.ID_campeonato_edicao
                  from tb_jogos_selecoes            a with(nolock)
@@ -28,7 +29,7 @@ as
         )                              f             on f.ID_Jogador = a.ID_Jogador
                                                     and f.ID_campeonato_edicao = b.ID_campeonato_edicao
    left join (
-		       select count(a.ID_Jogo_Selecao) as Jogos
+               select count(a.ID_Jogo_Selecao) as Jogos
                     , b.ID_Jogador
                     , a.ID_campeonato_edicao
                  from tb_jogos_selecoes            a with(nolock)
