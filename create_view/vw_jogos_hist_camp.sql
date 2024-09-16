@@ -30,6 +30,7 @@ as  (
       select a.ID_Jogador                                as ID_Jogador
            , a.Nome_Reduzido                             as Jogador
            , dbo.fn_jgd_sel_camp(a.ID_Jogador)           as Selecao
+           , dbo.fn_jogadores_posicoes(a.ID_Jogador)     as Posicoes
            , isnull(e.Jogos, 0) 
            + isnull(f.Jogos, 0)                          as Jogos
            , isnull(e.ID_Campeonato,f.ID_Campeonato)     as ID_Campeonato
