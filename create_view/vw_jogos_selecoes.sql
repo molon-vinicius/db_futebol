@@ -2,7 +2,7 @@ create view vw_jogos_selecoes
 
 as  
            select distinct
-                  a.ID_jogo_selecao                    as ID_jogo_selecao 
+                  src.ID_jogo_selecao                  as ID_jogo_selecao 
                 , format(src.Data_Jogo, 'dd/MM/yyyy')  as Data_Jogo
                 , concat(ce.Ano, ' ', c.Descricao, ' - ', p.Nome_Pais ) as Descricao_Completa
 		, est.Nome_Reduzido                    as Estadio
@@ -57,7 +57,7 @@ as
 	left join vw_arbitros               arb2 with(nolock)on arb2.ID_Arbitro = src.ID_arbitro_aux_2
 	left join vw_arbitros               arb3 with(nolock)on arb3.ID_Arbitro = src.ID_arbitro_aux_3
 	left join vw_arbitros               arb4 with(nolock)on arb4.ID_Arbitro = src.ID_arbitro_aux_4 
-            group by a.ID_jogo_selecao 
+            group by src.ID_jogo_selecao 
                    , format(src.Data_Jogo, 'dd/MM/yyyy')
                    , concat(ce.Ano, ' ', c.Descricao, ' - ', p.Nome_Pais )
 		   , est.Nome_Reduzido
