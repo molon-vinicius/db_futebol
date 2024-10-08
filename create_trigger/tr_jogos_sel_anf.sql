@@ -40,8 +40,9 @@ declare @id_jogador    int
         and a.ID_Selecao_Anfitriao = @id_sel
         and b.ID_Jogador = @id_jogador		
      )
+
   begin
-     raiserror ('Jogador não pertencente a seleção Anfitriã.', 11, 127)
+     raiserror ('Jogador não pertencente a seleção anfitriã.', 11, 127)
      rollback transaction
   end
 
@@ -51,4 +52,17 @@ declare @id_jogador    int
      rollback transaction
   end
 
+  if exists (
+     select GK
+       from tb_jogos_selecoes_anfitrioes a with(nolock)
+       join tb_jogadores_posicoes        b with(nolock)on b.ID_Jogador = a.ID_jogador
+      where a.ID_Jogo_Selecao = @id_jogo_sel 
+        and b.GK = 'S'
+     )
+  begin
+     raiserror ('Goleiro já cadastrado para o time titular.', 11, 127)
+     rollback transaction
+  end 
+
 end
+
