@@ -21,7 +21,7 @@ declare @erro varchar(1000)
   
   if (select ID_Jogo_Selecao from deleted) is not null 
   begin
-	    select @old_id_jogo_sel = ID_Jogo_Selecao
+      select @old_id_jogo_sel = ID_Jogo_Selecao
            , @old_id_sel      = ID_Selecao
            , @old_id_jgd      = ID_Jogador
         from deleted   
@@ -32,7 +32,7 @@ declare @erro varchar(1000)
       rollback transaction
     end
 
-	if @old_id_sel <> @id_sel
+    if @old_id_sel <> @id_sel
     begin
        if not exists (
           select ID_selecao_anfitriao
@@ -48,13 +48,13 @@ declare @erro varchar(1000)
              and ID_selecao_visitante = @id_sel
 	   )
 	   begin
-          raiserror ('Não é possível inserir o capitão, pois a seleção informada não faz parte dessa partida.', 11, 127)
-          rollback transaction
-     end
- end
+             raiserror ('Não é possível inserir o capitão, pois a seleção informada não faz parte dessa partida.', 11, 127)
+             rollback transaction
+           end
+    end
 
-	if @old_id_jgd <> @id_jgd
-	begin
+    if @old_id_jgd <> @id_jgd
+    begin
        if not exists (
           select ID_Jogador
             from tb_jogos_selecoes            a with(nolock)
@@ -74,7 +74,7 @@ declare @erro varchar(1000)
           raiserror ('Jogador informado não faz parte de nenhuma das seleções da partida.', 11, 127)
           rollback transaction
        end
-  
+
     end
 
   end
