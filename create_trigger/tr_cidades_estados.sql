@@ -10,39 +10,84 @@ as
 
 begin
 
-declare @ID_Pais   int
-declare @ID_Estado int
+declare @ID_Pais     int
+declare @ID_Estado   int
 declare @Nome_Cidade varchar(120)
-declare @Nome_Pais varchar(100)  
+declare @Nome_Pais   varchar(100)  
+declare @old_ID_Pais     int
+declare @old_ID_Estado   int
 
     select @ID_Pais     = b.ID_Pais
          , @ID_Estado   = a.ID_Estado
-		     , @Nome_Cidade = a.Nome_Cidade
+	 , @Nome_Cidade = a.Nome_Cidade
          , @Nome_Pais   = b.Nome_Pais
-      from Inserted    a with(nolock)
-	    join tb_paises   b with(nolock)on b.ID_Pais = a.ID_Pais
+      from inserted    a with(nolock)
+      join tb_paises   b with(nolock)on b.ID_Pais = a.ID_Pais
 
-  if @Nome_Pais = 'Brasil'
+  if (select ID_Estado from deleted) is not null
   begin
-     if @ID_Estado is null
+    select @old_ID_Pais = a.ID_Pais
+         , @old_ID_Estado = a.id_estado
+      from deleted     a with(nolock)
+      join tb_paises   b with(nolock)on b.ID_Pais = a.ID_Pais
+	  
+        if @old_ID_Pais <> @ID_Pais
+        begin   
+
+	   if @Nome_Pais = 'Brasil'
+           begin
+              if @ID_Estado is null
+              begin
+                raiserror ('Para cadastrar cidades do Brasil é necessário informar o Estado pertencente.', 11, 127)
+	        rollback transaction
+              end
+           end
+
+	end
+
+	if @old_ID_Estado <> @ID_Estado
         begin
-           raiserror ('Para cadastrar cidades do Brasil é necessário informar o Estado pertencente.', 11, 127)
-	         rollback transaction
+           if @ID_Estado is not null
+           begin
+              if not exists 
+              (  select b.ID_Pais
+                   from tb_estados a with(nolock)
+                   join tb_paises  b with(nolock)on b.ID_Pais = a.ID_Pais
+                  where a.ID_Estado = @ID_Estado
+                    and b.ID_Pais = @ID_Pais  )
+              begin
+                raiserror ('Estado não pertencente ao país informado.', 11, 127)
+	        rollback transaction
+              end
+           end
         end
   end
 
-  if @ID_Estado is not null
+  if (select ID_Estado from deleted) is null
   begin
-     if not exists 
-     (  select b.ID_Pais
-          from tb_estados a with(nolock)
-          join tb_paises  b with(nolock)on b.ID_Pais = a.ID_Pais
-         where a.ID_Estado = @ID_Estado
-           and b.ID_Pais = @ID_Pais  )
+     if @Nome_Pais = 'Brasil'
      begin
-       raiserror ('Estado não pertencente ao país informado.', 11, 127)
-	     rollback transaction
+        if @ID_Estado is null
+        begin
+           raiserror ('Para cadastrar cidades do Brasil é necessário informar o Estado pertencente.', 11, 127)
+	   rollback transaction
+        end
      end
+
+     if @ID_Estado is not null
+     begin
+        if not exists 
+        (  select b.ID_Pais
+             from tb_estados a with(nolock)
+             join tb_paises  b with(nolock)on b.ID_Pais = a.ID_Pais
+            where a.ID_Estado = @ID_Estado
+              and b.ID_Pais = @ID_Pais  )
+        begin
+          raiserror ('Estado não pertencente ao país informado.', 11, 127)
+	  rollback transaction
+        end
+     end
+
   end
- 
+
 end
