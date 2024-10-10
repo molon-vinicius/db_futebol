@@ -11,15 +11,33 @@ declare @encerramento varchar(10)
          , @encerramento = Encerramento
       from inserted 
 
-  if @ativo = 'N' and @encerramento is null
+  if (select ID_Estadio from deleted) is not null
   begin
-    raiserror ('É necessário informar uma data de encerramento para estádios inativos.', 11, 127)
-	  rollback transaction
-  end
+		
+       if @ativo = 'N' and @encerramento is null
+       begin
+         raiserror ('É necessário informar uma data de encerramento para estádios inativos.', 11, 127)
+	 rollback transaction
+       end
 
-  if @ativo = 'S' and @encerramento is not null
-  begin
-    raiserror ('Não é possível inserir um estádio ativo com data de encerramento.', 11, 127)
-	  rollback transaction
+       if @ativo = 'S' and @encerramento is not null
+       begin
+         raiserror ('Não é possível inserir um estádio ativo com data de encerramento.', 11, 127)
+	 rollback transaction
+       end
   end
- 
+	
+  if (select ID_Estadio from deleted) is null
+  begin
+     if @ativo = 'N' and @encerramento is null
+     begin
+       raiserror ('É necessário informar uma data de encerramento para estádios inativos.', 11, 127)
+       rollback transaction
+     end
+
+     if @ativo = 'S' and @encerramento is not null
+     begin
+       raiserror ('Não é possível inserir um estádio ativo com data de encerramento.', 11, 127)
+       rollback transaction
+     end
+  end
