@@ -19,7 +19,7 @@ declare @ID_selecao_pais_nasc int
          , @ID_selecao     = ID_Selecao
          , @ID_jogador     = ID_Jogador
          , @camisa         = Camisa 
-         , @nome_camisa    = Nome_Camisa
+	 , @nome_camisa    = Nome_Camisa
       from inserted    with(nolock)
 
     select @ID_campeonato  = ID_Campeonato
@@ -37,32 +37,43 @@ declare @ID_selecao_pais_nasc int
  left join tb_selecoes   g with(nolock)on g.Nome_Selecao = f.Nome_Pais
      where a.ID_Jogador = @ID_jogador
 
+if (select ID_Jogador from deleted) is not null
+begin
  if @ID_campeonato > 0
   begin
-    if (
+   if (
       select count(distinct a.ID_Selecao) as qtd
         from inserted                             a with(nolock)
         join tb_campeonatos_edicoes_selecoes_part b with(nolock)on b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
-	                                                           and b.ID_Selecao = a.ID_Selecao
+                                                               and b.ID_Selecao = a.ID_Selecao
        where b.ID_Campeonato_Edicao = @ID_camp_edicao
          and b.ID_Selecao = @ID_selecao   ) = 0
-      begin
-          raiserror ('Seleção não participante dessa edição do campeonato.', 11, 127)
-          rollback transaction      
-      end	
-  end
-	
-   if  ( isnull(@ID_selecao_dupla_cidadania,0) <> @ID_selecao ) 
-   and ( @ID_selecao_pais_nasc <> @ID_selecao ) 
    begin
-      set @retorno = (
-      select concat('O jogador ''', b.Nome_Reduzido ,''' não pode ser inserido nessa seleção, pois não possui essa nacionalidade.')
-        from tb_jogadores a with(nolock)
-        join tb_pessoas   b with(nolock)on b.ID_Pessoa = a.ID_Pessoa
-       where a.ID_Jogador = @ID_jogador
-	  )
-      raiserror (@retorno, 11, 127)
-      rollback transaction
+      raiserror ('Seleção não participante dessa edição do campeonato.', 11, 127)
+      rollback transaction      
+   end
+
+   if @ID_selecao not in 
+   (210 --Iugoslávia
+   ,211 --Tchecoslováquia
+   ,212 --União Soviética
+   ,213 --CEI
+   ,214 --Alemanha Oriental
+   ,215 --Alemanha Ocidental
+   ,216) --Sérvia e Montenegro
+   begin
+      if  ( isnull(@ID_selecao_dupla_cidadania,0) <> @ID_selecao ) 
+      and ( @ID_selecao_pais_nasc <> @ID_selecao ) 
+      begin
+         set @retorno = (
+	  select concat('O jogador ''', b.Nome_Reduzido ,''' não pode ser inserido nessa seleção, pois não possui essa nacionalidade.')
+           from tb_jogadores a with(nolock)
+	   join tb_pessoas   b with(nolock)on b.ID_Pessoa = a.ID_Pessoa
+          where a.ID_Jogador = @ID_jogador
+	     )
+         raiserror (@retorno, 11, 127)
+	 rollback transaction
+      end
    end
 
    if isnumeric(@camisa) = 0
@@ -83,5 +94,74 @@ declare @ID_selecao_pais_nasc int
       raiserror (@retorno, 11, 127)
       rollback transaction
    end
-	
+     
+  end
+
+end
+
+if (select ID_Jogador from deleted) is null
+begin
+ if @ID_campeonato > 0
+  begin
+   if (
+      select count(distinct a.ID_Selecao) as qtd
+        from inserted                             a with(nolock)
+        join tb_campeonatos_edicoes_selecoes_part b with(nolock)on b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
+                                                               and b.ID_Selecao = a.ID_Selecao
+       where b.ID_Campeonato_Edicao = @ID_camp_edicao
+	     and b.ID_Selecao = @ID_selecao   ) = 0
+   begin
+      raiserror ('Seleção não participante dessa edição do campeonato.', 11, 127)
+      rollback transaction      
+   end
+
+   if @ID_selecao not in 
+   (210 --Iugoslávia
+   ,211 --Tchecoslováquia
+   ,212 --União Soviética
+   ,213 --CEI
+   ,214 --Alemanha Oriental
+   ,215 --Alemanha Ocidental
+   ,216) --Sérvia e Montenegro
+   begin
+      if  ( isnull(@ID_selecao_dupla_cidadania,0) <> @ID_selecao ) 
+      and ( @ID_selecao_pais_nasc <> @ID_selecao ) 
+      begin
+         set @retorno = (
+         select concat('O jogador ''', b.Nome_Reduzido ,''' não pode ser inserido nessa seleção, pois não possui essa nacionalidade.')
+           from tb_jogadores a with(nolock) 
+	   join tb_pessoas   b with(nolock)on b.ID_Pessoa = a.ID_Pessoa
+          where a.ID_Jogador = @ID_jogador
+	     )
+         raiserror (@retorno, 11, 127)
+         rollback transaction
+      end
+   begin
+   if isnumeric(@camisa) = 0
+   begin  
+      raiserror ('A coluna ''Camisa'' só aceita caracteres numéricos.', 11, 127)
+      rollback transaction
+   end
+
+   if @camisa = 0
+   begin  
+      raiserror ('A coluna ''Camisa'' não pode ser preenchida com o número zero.', 11, 127)
+      rollback transaction
+   end
+
+   if (select dbo.fn_valida_string(@nome_camisa)) is not null
+   begin
+      set @retorno = (select dbo.fn_valida_string(@nome_camisa))
+      raiserror (@retorno, 11, 127)
+      rollback transaction
+   end
+     
+  end
+
+end
+
 end 
+
+end
+
+end
