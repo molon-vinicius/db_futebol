@@ -6,6 +6,7 @@ declare @ID_Pais int
 set @ID_Pais = (select ID_Pais from tb_paises with(nolock) where Nome_Pais = @Nome_Pais)
 
 if @ID_Pais is null
+and @Nome_Pais is not null
 begin
   select 'País informado não encontrado.'
   return
