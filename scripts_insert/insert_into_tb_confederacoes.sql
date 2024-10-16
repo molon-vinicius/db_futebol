@@ -2,9 +2,10 @@ set identity_insert tb_confederacoes on
 
 insert into tb_confederacoes
            (ID_Confederacao
-		   ,Sigla_Confederacao
+           ,Sigla_Confederacao
            ,Nome_Confederacao
            ,ID_Continente)
+	
      values (0, NULL,'Todas',0)
            ,(1, 'CAF','Confederação Africana de Futebol',1)
            ,(2, 'AFC','Confederação Asiática de Futebol',2)
