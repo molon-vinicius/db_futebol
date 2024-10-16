@@ -1,7 +1,7 @@
 insert into tb_posicoes
            (Sigla_Posicao
-		       ,Descricao_Posicao)
-	  values ('GK','Goalkeeper')
+           ,Descricao_Posicao)
+    values ('GK','Goalkeeper')
          , ('CB','Centre Back')
          , ('SB','Side Back')
          , ('SW','Sweeper')
