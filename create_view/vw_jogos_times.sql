@@ -51,7 +51,7 @@ left join (
 		       from tb_jogos_times_eventos  with(nolock)
           where ID_tipo_evento in (1, 5, 8) -- Gol, Gol (P), Gol Contra
           group by ID_jogo_time, ID_time
-		                                 ) v with(nolock)on v.ID_jogo_time = src.ID_jogo_time
+		                                 ) v             on v.ID_jogo_time = src.ID_jogo_time
                                                     and v.ID_time = src.ID_time_visitante		 
      join vw_arbitros			           arb with(nolock)on arb.ID_Arbitro = src.ID_arbitro
 left join vw_arbitros               arb1 with(nolock)on arb1.ID_Arbitro = src.ID_arbitro_aux_1
