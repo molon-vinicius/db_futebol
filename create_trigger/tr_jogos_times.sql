@@ -36,9 +36,9 @@ begin
   begin
     if (
        select 1
-         from tb_campeonatos_edicoes_selecoes_part
+         from tb_campeonatos_edicoes_times_part
         where ID_Campeonato_Edicao = @id_camp_ed
-          and ID_Selecao = @id_anf
+          and ID_Time = @id_anf
     ) is null
     begin
        raiserror ('Time anfitrião informado não é um participante deste campeonato.', 11, 127)
@@ -47,9 +47,9 @@ begin
 
     if (
        select 1
-         from tb_campeonatos_edicoes_selecoes_part
+         from tb_campeonatos_edicoes_times_part
         where ID_Campeonato_Edicao = @id_camp_ed
-          and ID_Selecao = @id_vis
+          and ID_Time = @id_vis
     ) is null
     begin
        raiserror ('Time visitante informado não é um participante deste campeonato.', 11, 127)
@@ -118,9 +118,9 @@ begin
   begin
     if (
        select 1
-         from tb_campeonatos_edicoes_selecoes_part
+         from tb_campeonatos_edicoes_times_part
         where ID_Campeonato_Edicao = @id_camp_ed
-          and ID_Selecao = @id_anf
+          and ID_Time = @id_anf
     ) is null
     begin
        raiserror ('Time anfitrião informado não é um participante deste campeonato.', 11, 127)
@@ -129,15 +129,15 @@ begin
 
     if (
        select 1
-         from tb_campeonatos_edicoes_selecoes_part
+         from tb_campeonatos_edicoes_times_part
         where ID_Campeonato_Edicao = @id_camp_ed
-          and ID_Selecao = @id_vis
+          and ID_Time = @id_vis
     ) is null
     begin
        raiserror ('Time visitante informado não é um participante deste campeonato.', 11, 127)
        rollback transaction
     end
-end
+  end
 
     if @id_arb = @id_arb_1
     or @id_arb = @id_arb_2
