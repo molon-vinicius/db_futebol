@@ -12,10 +12,10 @@ as
         , cf.ID_Campeonato_Fase                as ID_Fase
         , cf.Descricao                         as Fase
         , anf.ID_time                          as ID_Anfitriao
-        , anf.Nome_time                        as Anfitriao
+        , anf.Nome_Reduzido                    as Anfitriao
         , isnull(a.gols,0)                     as Gols_Anfitriao
         , vis.ID_time                          as ID_Visitante
-        , vis.Nome_time                        as Visitante
+        , vis.Nome_Reduzido                    as Visitante
         , isnull(v.gols,0)                     as Gols_Visitante
         , arb.Nome_Reduzido                    as Arbitro_Principal
         , arb1.Nome_Reduzido                   as Auxiliar_1
@@ -66,10 +66,10 @@ left join vw_arbitros               arb4 with(nolock)on arb4.ID_Arbitro = src.ID
            , cf.ID_Campeonato_Fase
            , cf.Descricao
            , anf.ID_time
-           , anf.Nome_time
+           , anf.Nome_Reduzido
            , a.gols
            , vis.ID_time
-           , vis.Nome_time
+           , vis.Nome_Reduzido
            , v.gols
            , arb.Nome_Reduzido
            , arb1.Nome_Reduzido
