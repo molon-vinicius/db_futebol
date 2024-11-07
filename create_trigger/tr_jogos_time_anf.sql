@@ -10,11 +10,18 @@ declare @id_jogo_time  int
 declare @qtd_jogadores int 
 declare @id_time       int 
 declare @id_jogador    int 
+declare @temp_euro     varchar(9)
 
-       select @id_jogo_time = ID_jogo_time
-            , @id_time      = ID_time
-            , @id_jogador   = ID_Jogador
-         from inserted
+       select @id_jogo_time = a.ID_jogo_time
+            , @id_time      = a.ID_time
+            , @id_jogador   = a.ID_Jogador
+            , @temp_euro    = case when month(b.Data_Jogo) < 7
+                                   then concat(year(b.Data_Jogo)-1,'/',year(b.Data_Jogo))
+                                   else concat(year(b.Data_Jogo)  ,'/',year(b.Data_Jogo)+1)
+                              end
+         from inserted        a with(nolock)
+         join tb_jogos_times  b with(nolock)on b.ID_Jogo_Time = A.ID_Jogo_Time
+        where a.ID_jogo_time = 1
 
        select @qtd_jogadores = count(a.ID_jogador)
          from tb_jogos_times_anfitrioes a with(nolock)
@@ -37,8 +44,10 @@ begin
      select ID_jogador
        from tb_jogos_times         a with(nolock)
        join tb_campeonatos_edicoes b with(nolock)on b.ID_Campeonato_Edicao = a.ID_campeonato_edicao
-       join tb_times_elencos       c with(nolock)on c.Temporada = b.Ano
-                                                and c.ID_time = a.ID_time_anfitriao
+       join tb_times_elencos       c with(nolock)on (c.Temporada = b.Ano
+                                                and c.ID_time = a.ID_time_anfitriao)
+                                                 or (c.Temporada = @temp_euro
+                                                and c.ID_time = a.ID_time_anfitriao)
       where a.ID_Jogo_Time = @id_jogo_time
         and a.ID_time_anfitriao = @id_time
         and c.ID_Jogador = @id_jogador		
@@ -75,7 +84,6 @@ begin
        join tb_jogadores_posicoes     b with(nolock)on b.ID_Jogador = a.ID_jogador
       where a.ID_Jogo_Time = @id_jogo_time 
         and b.GK = 'S'
- 
     ) is null
   begin
      raiserror ('Necessário cadastrar um goleiro para o time titular.', 11, 127)
@@ -101,22 +109,22 @@ begin
        from tb_jogos_times         a with(nolock)
        join tb_campeonatos_edicoes b with(nolock)on b.ID_Campeonato_Edicao = a.ID_campeonato_edicao
        join tb_times_elencos       c with(nolock)on (c.Temporada = b.Ano
-                                                and c.ID_time = a.ID_time_visitante)
-                                                 or (c.Temporada = concat(b.Ano-1,'/',b.Ano)
-                                                and c.ID_time = a.ID_time_visitante)
+                                                and c.ID_time = a.ID_time_anfitriao)
+                                                 or (c.Temporada = @temp_euro
+                                                and c.ID_time = a.ID_time_anfitriao)
       where a.ID_Jogo_Time = @id_jogo_time
         and a.ID_time_anfitriao = @id_time
         and c.ID_Jogador = @id_jogador		
 	 )
   begin
      raiserror ('Jogador não pertencente ao time anfitrião.', 11, 127)
-	 rollback transaction
+     rollback transaction
   end
 
   if @qtd_jogadores > 11
   begin
      raiserror ('Quantidade de jogadores titulares já atingida.', 11, 127)
-	 rollback transaction
+     rollback transaction
   end
 
   if @qtd_jogadores = 11
@@ -139,7 +147,6 @@ begin
        join tb_jogadores_posicoes     b with(nolock)on b.ID_Jogador = a.ID_jogador
       where a.ID_Jogo_Time = @id_jogo_time 
         and b.GK = 'S'
- 
     ) is null 
   begin  
      raiserror ('Necessário cadastrar um goleiro para o time titular.', 11, 127)
