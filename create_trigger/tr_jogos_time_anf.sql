@@ -59,7 +59,7 @@ begin
   and (
      select count(GK) as qtd
        from tb_jogos_times_anfitrioes a with(nolock)
-       join tb_jogadores_posicoes        b with(nolock)on b.ID_Jogador = a.ID_jogador
+       join tb_jogadores_posicoes     b with(nolock)on b.ID_Jogador = a.ID_jogador
       where a.ID_Jogo_Time = @id_jogo_time 
         and b.GK = 'S'
      ) > 1
@@ -72,10 +72,11 @@ begin
   and (
      select GK
        from tb_jogos_times_anfitrioes a with(nolock)
-       join tb_jogadores_posicoes        b with(nolock)on b.ID_Jogador = a.ID_jogador
+       join tb_jogadores_posicoes     b with(nolock)on b.ID_Jogador = a.ID_jogador
       where a.ID_Jogo_Time = @id_jogo_time 
         and b.GK = 'S'
-     ) is null
+ 
+    ) is null
   begin
      raiserror ('Necessário cadastrar um goleiro para o time titular.', 11, 127)
      rollback transaction
@@ -99,28 +100,30 @@ begin
      select ID_jogador
        from tb_jogos_times         a with(nolock)
        join tb_campeonatos_edicoes b with(nolock)on b.ID_Campeonato_Edicao = a.ID_campeonato_edicao
-       join tb_times_elencos       c with(nolock)on c.Temporada = b.Ano
-                                                and c.ID_time = a.ID_time_anfitriao
+       join tb_times_elencos       c with(nolock)on (c.Temporada = b.Ano
+                                                and c.ID_time = a.ID_time_visitante)
+                                                 or (c.Temporada = concat(b.Ano-1,'/',b.Ano)
+                                                and c.ID_time = a.ID_time_visitante)
       where a.ID_Jogo_Time = @id_jogo_time
         and a.ID_time_anfitriao = @id_time
         and c.ID_Jogador = @id_jogador		
 	 )
   begin
      raiserror ('Jogador não pertencente ao time anfitrião.', 11, 127)
-     rollback transaction
+	 rollback transaction
   end
 
   if @qtd_jogadores > 11
   begin
      raiserror ('Quantidade de jogadores titulares já atingida.', 11, 127)
-     rollback transaction
+	 rollback transaction
   end
 
   if @qtd_jogadores = 11
   and (
      select count(GK) as qtd
        from tb_jogos_times_anfitrioes a with(nolock)
-       join tb_jogadores_posicoes        b with(nolock)on b.ID_Jogador = a.ID_jogador
+       join tb_jogadores_posicoes     b with(nolock)on b.ID_Jogador = a.ID_jogador
       where a.ID_Jogo_Time = @id_jogo_time 
         and b.GK = 'S'
      ) > 1
@@ -133,10 +136,11 @@ begin
   and (
      select GK
        from tb_jogos_times_anfitrioes a with(nolock)
-       join tb_jogadores_posicoes        b with(nolock)on b.ID_Jogador = a.ID_jogador
+       join tb_jogadores_posicoes     b with(nolock)on b.ID_Jogador = a.ID_jogador
       where a.ID_Jogo_Time = @id_jogo_time 
         and b.GK = 'S'
-     ) is null 
+ 
+    ) is null 
   begin  
      raiserror ('Necessário cadastrar um goleiro para o time titular.', 11, 127)
      rollback transaction
@@ -144,3 +148,4 @@ begin
 end
 
 end
+
