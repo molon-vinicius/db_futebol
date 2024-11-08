@@ -21,7 +21,6 @@ declare @temp_euro     varchar(9)
                               end
          from inserted        a with(nolock)
          join tb_jogos_times  b with(nolock)on b.ID_Jogo_Time = A.ID_Jogo_Time
-        where a.ID_jogo_time = 1
 
        select @qtd_jogadores = count(a.ID_jogador)
          from tb_jogos_times_anfitrioes a with(nolock)
