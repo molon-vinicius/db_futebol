@@ -5,13 +5,13 @@ returns @elenco table
 ,capitao varchar(1)
 ,id_jogador int
 ,nome_reduzido varchar(60)
-,id_posicao int
 ,posicoes varchar(60))
 
 as 
 
 /* teste */
 --declare @id_jogo_selecao int = 55
+
 --declare @elenco table 
 --(camisa int
 --,capitao varchar(1)
@@ -21,30 +21,25 @@ as
 --,posicoes varchar(60))
 
 begin
-insert into @elenco (camisa, capitao, id_jogador, nome_reduzido, id_posicao, posicoes)
+ insert into @elenco (camisa, capitao, id_jogador, nome_reduzido, posicoes)
       select a.camisa
            , a.capitao
-	   , a.id_jogador
+           , a.id_jogador
            , case when a.capitao = 'P' or y.ID_Jogador is not null
                   then concat(c.Nome_Reduzido, ' (C)')
-		  else c.Nome_Reduzido
+                  else c.Nome_Reduzido
              end                 as Nome_Reduzido
-           , d.id_posicao
-	   , a.posicoes 
-	from tb_jogos_selecoes            x with(nolock)
-	join tb_selecoes_elencos          a with(nolock)on a.ID_selecao = x.ID_selecao_visitante
+           , dbo.fn_jogadores_posicoes(a.id_jogador) as Posicoes
+        from tb_jogos_selecoes            x with(nolock)
+        join tb_selecoes_elencos          a with(nolock)on a.ID_selecao = x.ID_selecao_visitante
                                                        and a.ID_Campeonato_Edicao = x.ID_Campeonato_Edicao
-	join tb_jogos_selecoes_visitantes b with(nolock)on b.ID_selecao = a.ID_selecao
+        join tb_jogos_selecoes_visitantes b with(nolock)on b.ID_selecao = a.ID_selecao
                                                        and b.ID_jogador = a.ID_jogador
-  					               and b.ID_jogo_selecao = x.ID_jogo_selecao
+                                                       and b.ID_jogo_selecao = x.ID_jogo_selecao
         join vw_jogadores                 c with(nolock)on c.ID_jogador = a.ID_jogador
    left join tb_selecoes_elencos_capitaes y with(nolock)on y.ID_Selecao = b.ID_selecao
                                                        and y.ID_jogador = b.ID_jogador
                                                        and y.ID_Jogo_selecao = b.ID_jogo_selecao
-        join tb_posicoes                  d with(nolock)on d.Sigla_Posicao = case when substring(a.posicoes,0,2) in ('R','L')
-                                                                                  then substring(a.posicoes,2,2)
-                                                                                  else substring(a.posicoes,0,3)
-                                                                             end 
        where b.ID_jogo_selecao = @id_jogo_selecao
 
 if not exists ( 
@@ -58,3 +53,4 @@ begin
 end
    return
 end
+
