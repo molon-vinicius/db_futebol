@@ -2,7 +2,13 @@ create view vw_campeonatos
 
 as 
 
-    select a.ID_Campeonato         
+    select a.ID_Campeonato    
+         , case when a.ID_Tipo_Campeonato = 1
+                then 'Time'
+                when a.ID_Tipo_Campeonato = 2
+                then 'Seleção'
+                else 'Amistoso'
+           end                as Tipo_Campeonato
          , b.ID_Campeonato_Edicao
          , a.Descricao        as Campeonato
          , b.Ano
@@ -19,4 +25,4 @@ as
       from tb_campeonatos           a with(nolock)
       join tb_campeonatos_edicoes   b with(nolock)on b.ID_Campeonato = a.ID_Campeonato
  left join tb_paises                c with(nolock)on c.ID_Pais = b.Pais_Sede
- 
+
