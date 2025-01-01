@@ -55,3 +55,18 @@ REFERENCES tb_jogadores (ID_Jogador)
 GO
 
 alter table tb_jogadores_posicoes add constraint uq_jogadores_posicoes unique (ID_Jogador)
+
+ALTER TABLE tb_jogadores_posicoes
+ADD CONSTRAINT chk_posicoes 
+    CHECK (GK in ('S','N','P')
+       and CB in ('S','N','P')
+       and SB in ('S','N','P')
+       and SW in ('S','N','P')
+       and WB in ('S','N','P')
+       and DM in ('S','N','P')
+       and CM in ('S','N','P')
+       and SM in ('S','N','P')
+       and AM in ('S','N','P')
+       and WF in ('S','N','P')
+       and SS in ('S','N','P')
+       and CF in ('S','N','P'))
