@@ -14,10 +14,10 @@ declare @old_id_sel      int
 declare @old_id_jgd      int
 declare @erro varchar(1000)
 
-        select @id_jogo_sel = ID_Jogo_Selecao
-             , @id_sel      = ID_Selecao
-             , @id_jgd      = ID_Jogador
-          from inserted
+      select @id_jogo_sel = ID_Jogo_Selecao
+           , @id_sel      = ID_Selecao
+           , @id_jgd      = ID_Jogador
+        from inserted
   
   if (select ID_Jogo_Selecao from deleted) is not null 
   begin
@@ -32,7 +32,7 @@ declare @erro varchar(1000)
       rollback transaction
     end
 
-    if @old_id_sel <> @id_sel
+	if @old_id_sel <> @id_sel
     begin
        if not exists (
           select ID_selecao_anfitriao
@@ -48,13 +48,13 @@ declare @erro varchar(1000)
              and ID_selecao_visitante = @id_sel
 	   )
 	   begin
-             raiserror ('Não é possível inserir o capitão, pois a seleção informada não faz parte dessa partida.', 11, 127)
-             rollback transaction
-           end
+          raiserror ('Não é possível inserir o capitão, pois a seleção informada não faz parte dessa partida.', 11, 127)
+          rollback transaction
+       end
     end
 
-    if @old_id_jgd <> @id_jgd
-    begin
+	if @old_id_jgd <> @id_jgd
+	begin
        if not exists (
           select ID_Jogador
             from tb_jogos_selecoes            a with(nolock)
@@ -74,7 +74,6 @@ declare @erro varchar(1000)
           raiserror ('Jogador informado não faz parte de nenhuma das seleções da partida.', 11, 127)
           rollback transaction
        end
-
     end
 
   end
@@ -121,22 +120,26 @@ declare @erro varchar(1000)
 
     if exists (
        select 1
-         from tb_jogos_selecoes        a with(nolock)
-         join tb_selecoes_elencos      b with(nolock)on b.ID_campeonato_edicao = a.ID_campeonato_edicao
-                                                    and b.ID_selecao = a.ID_selecao_anfitriao
+         from tb_jogos_selecoes            a with(nolock)
+         join tb_jogos_selecoes_anfitrioes b with(nolock)on b.ID_Jogo_Selecao = a.ID_Jogo_Selecao
+         join tb_selecoes_elencos          c with(nolock)on c.ID_Selecao = b.ID_Selecao
+                                                        and c.ID_jogador = b.ID_Jogador
+                                                        and c.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
         where a.ID_Jogo_Selecao = @id_jogo_sel
           and b.ID_selecao = @id_sel
-          and b.Capitao in ('P', 'S')
+          and c.Capitao in ('P', 'S')
 
         union all
 
        select 1
-         from tb_jogos_selecoes        a with(nolock)
-         join tb_selecoes_elencos      b with(nolock)on b.ID_campeonato_edicao = a.ID_campeonato_edicao
-                                                    and b.ID_selecao = a.ID_selecao_visitante
+         from tb_jogos_selecoes            a with(nolock)
+         join tb_jogos_selecoes_visitantes b with(nolock)on b.ID_Jogo_Selecao = a.ID_Jogo_Selecao
+         join tb_selecoes_elencos          c with(nolock)on c.ID_Selecao = b.ID_Selecao
+                                                        and c.ID_jogador = b.ID_Jogador
+                                                        and c.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
         where a.ID_Jogo_Selecao = @id_jogo_sel
           and b.ID_selecao = @id_sel
-          and b.Capitao in ('P', 'S')
+          and c.Capitao in ('P', 'S')
     ) 
     begin
        raiserror ('Seleção já tem um capitão definido para essa partida.', 11, 127)
@@ -146,4 +149,4 @@ declare @erro varchar(1000)
   end
 
 end
- 
+
