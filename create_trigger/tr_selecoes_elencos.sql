@@ -76,7 +76,7 @@ begin
       end
    end
 
-   if isnumeric(@camisa) = 0
+   if @camisa is not null and isnumeric(@camisa) = 0
    begin  
       raiserror ('A coluna ''Camisa'' só aceita caracteres numéricos.', 11, 127)
       rollback transaction
@@ -137,7 +137,7 @@ begin
          rollback transaction
       end
    begin
-   if isnumeric(@camisa) = 0
+   if @camisa is not null and isnumeric(@camisa) = 0
    begin  
       raiserror ('A coluna ''Camisa'' só aceita caracteres numéricos.', 11, 127)
       rollback transaction
