@@ -38,7 +38,7 @@ as
 	         , count(ID_tipo_evento) as gols
 	         , ID_selecao
 	      from tb_jogos_selecoes_eventos  with(nolock)
-             where ID_tipo_evento in (1, 5, 8) -- Gol, Gol (P), Gol Contra
+             where ID_tipo_evento in (1, 4, 5, 8) -- Gol, Gol Olímpico, Gol (P), Gol Contra
              group by ID_jogo_selecao, ID_selecao
 		                             ) a             on a.ID_jogo_selecao = src.ID_jogo_selecao
                                                             and a.ID_selecao = src.ID_selecao_anfitriao
@@ -48,7 +48,7 @@ as
 		  , count(ID_tipo_evento) as gols
 		  , ID_selecao
 	       from tb_jogos_selecoes_eventos  with(nolock)
-              where ID_tipo_evento in (1, 5, 8) -- Gol, Gol (P), Gol Contra
+              where ID_tipo_evento in (1, 4, 5, 8) -- Gol, Gol Olímpico, Gol (P), Gol Contra
               group by ID_jogo_selecao, ID_selecao
                                              ) v             on v.ID_jogo_selecao = src.ID_jogo_selecao
                                                             and v.ID_selecao = src.ID_selecao_visitante		 
