@@ -3,6 +3,7 @@ insert into tb_tipos_eventos
     values ('Gol')
          , ('Cartão Amarelo')
          , ('Cartão Vermelho')
+         , ('Gol Olímpico')           
          , ('Gol (P)')
          , ('Pênalti (X)')
          , ('Gol Anulado')
