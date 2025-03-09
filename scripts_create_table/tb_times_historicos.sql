@@ -5,7 +5,8 @@
              ,Nome_Reduzido varchar(60)
              ,ID_Cidade int
              ,Data_Inicio varchar(10)
-             ,Data_Fim varchar(10))
+             ,Data_Fim varchar(10)
+             ,Observacao nvarchar(500))
 
 alter table tb_times_historicos 
 add constraint fk_times_hist_id_time
