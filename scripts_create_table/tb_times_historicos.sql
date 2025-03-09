@@ -6,7 +6,8 @@
              ,ID_Cidade int
              ,Data_Inicio varchar(10)
              ,Data_Fim varchar(10)
-             ,Observacao nvarchar(500))
+             ,Observacao nvarchar(500)
+             ,Situacao_Atual varchar(1))
 
 alter table tb_times_historicos 
 add constraint fk_times_hist_id_time
