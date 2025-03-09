@@ -20,5 +20,5 @@ add ID_Status_Historico int
 
 alter table tb_times_historicos 
 add constraint fk_times_hist_id_status
-foreign key (ID_Status_Historico) references tb_status_historico(ID_Status_Historico)
+foreign key (ID_Status_Historico) references tb_status_historicos(ID_Status_Historico)
 
