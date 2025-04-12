@@ -5,15 +5,15 @@ declare @cadastra_tecnico varchar(1)  = 'N'
 declare @cadastra_jogador varchar(1)  = 'S'
 
 declare @nome_completo nvarchar(120)  = 'Dixie Dean'
-declare @nome_reduzido varchar(60)	  = null
-declare @altura numeric(15,2)		      = 1.78
+declare @nome_reduzido varchar(60)    = null
+declare @altura numeric(15,2)         = 1.78
 declare @cidade_nasc varchar(60)      = 'Birkenhead'
 declare @estado varchar(60)           = null
 declare @pais_nasc varchar(100)       = 'Inglaterra'
 declare @dupla_cidadania varchar(100) = null
 declare @pais_preferencial int        =  1 /* 1-Nascimento | 2-Dupla Cidadania */
 declare @data_nascimento varchar(10)  = '22/01/1907'
-declare @data_obito varchar(10)		    = '01/03/1980'
+declare @data_obito varchar(10)       = '01/03/1980'
 
 declare @pe_preferencial varchar(1)   = 'R'
 declare @ambidestro      varchar(1)   = 'N'
@@ -26,10 +26,10 @@ declare @id_pais_nasc int
 declare @id_dupla_cidadania int
 declare @id_pessoa int
 
-set @id_cidade_nasc = (select ID_Cidade from tb_cidades with(nolock) where Nome_Cidade = @cidade_nasc)
-set @id_estado = (select ID_Estado from tb_estados with(nolock) where Nome_Estado = @estado)
-set @id_pais_nasc = (select ID_Pais from tb_paises with(nolock) where Nome_Pais = @pais_nasc)
-set @id_dupla_cidadania = (select ID_Pais from tb_paises with(nolock) where Nome_Pais = @dupla_cidadania)
+set @id_cidade_nasc     = (select ID_Cidade from tb_cidades with(nolock) where Nome_Cidade = @cidade_nasc)
+set @id_estado          = (select ID_Estado from tb_estados with(nolock) where Nome_Estado = @estado)
+set @id_pais_nasc       = (select ID_Pais   from tb_paises  with(nolock) where Nome_Pais   = @pais_nasc)
+set @id_dupla_cidadania = (select ID_Pais   from tb_paises  with(nolock) where Nome_Pais   = @dupla_cidadania)
 
 set @id_pessoa = (select ID_Pessoa from tb_pessoas with(nolock) where Nome_Completo = @nome_completo or Nome_Reduzido = @nome_reduzido)
 
@@ -58,12 +58,12 @@ and @cidade_nasc is not null
 begin
   insert into tb_cidades
              (Nome_Cidade
-			       ,ID_Estado
-			       ,ID_Pais)
+             ,ID_Estado
+             ,ID_Pais)
 
        select @cidade_nasc  as Nome_Cidade
             , @id_estado    as ID_Estado
-			      , @id_pais_nasc as ID_Pais
+            , @id_pais_nasc as ID_Pais
    
    set @id_cidade_nasc = scope_identity()
 end
@@ -84,30 +84,30 @@ begin
 
 insert into tb_pessoas 
            (--ID_Pessoa,
-		        Nome_Completo
-		       ,Nome_Reduzido
-		       ,Altura
-		       ,ID_Cidade_Nascimento
-		       ,Dupla_Cidadania
-		       ,Pais_Preferencial
-		       ,Data_Nascimento
-		       ,Data_Obito)
+            Nome_Completo
+           ,Nome_Reduzido
+           ,Altura
+           ,ID_Cidade_Nascimento
+           ,Dupla_Cidadania
+           ,Pais_Preferencial
+           ,Data_Nascimento
+           ,Data_Obito)
 
 
      select --292                                    as ID_Pessoa ,
-	          @nome_completo                         as Nome_Completo
+            @nome_completo                         as Nome_Completo
           , isnull(@nome_reduzido, @nome_completo) as Nome_Reduzido
-		      , @altura                                as Altura
-		      , @id_cidade_nasc                        as ID_Cidade_Nascimento
-		      , @id_dupla_cidadania                    as Dupla_Cidadania
-		      , case when @pais_preferencial = 1
+          , @altura                                as Altura
+          , @id_cidade_nasc                        as ID_Cidade_Nascimento
+          , @id_dupla_cidadania                    as Dupla_Cidadania
+          , case when @pais_preferencial = 1
                  then @id_pais_nasc
-				         when @pais_preferencial = 2
-				         then @id_dupla_cidadania
-				         else null
+                 when @pais_preferencial = 2
+                 then @id_dupla_cidadania
+                 else null
             end                                    as Pais_Preferencial
           , @data_nascimento                       as Data_Nascimento
-		      , @data_obito                            as Data_Obito
+          , @data_obito                            as Data_Obito
 
   set @id_pessoa = scope_identity()
 end
@@ -134,17 +134,17 @@ if isnull(@cadastra_tecnico,'N') = 'S'
   end
 
 if isnull(@cadastra_jogador,'N') = 'S'
-  begin
-  insert into tb_jogadores
-             (--ID_Jogador,
+begin
+                    insert into tb_jogadores
+                               (--ID_Jogador,
 			        ID_Pessoa
 			       ,Pe_Preferencial
 			       ,Ambidestro
 			       ,Lado_Oposto
 			       ,Dois_Lados)
 			 select --268              as ID_Jogador ,
-              @id_pessoa       as ID_Pessoa
-	          , @pe_preferencial as Pe_Preferencial
+                                @id_pessoa       as ID_Pessoa
+                              , @pe_preferencial as Pe_Preferencial
 			      , @ambidestro      as Ambidestro
 			      , @lado_oposto     as Lado_Oposto
 			      , @dois_lados      as Dois_Lados
