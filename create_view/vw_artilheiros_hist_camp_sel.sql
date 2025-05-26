@@ -1,4 +1,4 @@
-create view vw_artilheiros_hist_camp
+create view vw_artilheiros_hist_camp_sel
 
 as
 
