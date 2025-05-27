@@ -8,7 +8,7 @@ as
           , b.ID_selecao
           , c.Nome_Selecao
           , b.Grupos
-          , b.Fases 
+          , dbo.fn_fases(b.Fases) as Fases
        from vw_campeonatos                       a with(nolock)
        join tb_campeonatos_edicoes_selecoes_part b with(nolock)on b.ID_campeonato_edicao = a.ID_Campeonato_Edicao
        join tb_selecoes                          c with(nolock)on c.ID_Selecao = b.ID_selecao   
