@@ -1,9 +1,12 @@
-alter view vw_jogadores 
+create or alter view vw_jogadores 
   
 as  
-   select a.ID_Jogador
-        , b.Nome_Reduzido  
-        , b.Altura  
+   select b.ID_Pessoa
+        , a.ID_Jogador
+        , b.Nome_Completo
+        , b.Nome_Reduzido
+        , b.Altura
+        , b.Data_Nascimento
         , dbo.fn_pessoas_nacionalidade(b.Nome_Completo) as Nacionalidade
         , isnull(c.Nome_Pais,d.Nome_Pais)               as Pais_Nascimento
         , dbo.fn_jogadores_posicoes(a.ID_Jogador)       as Posicoes
