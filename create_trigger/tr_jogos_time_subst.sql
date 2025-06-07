@@ -94,6 +94,7 @@ begin
                                                    and b.ID_Jogo_Time = a.ID_Jogo_Time
       where a.ID_Jogo_Time = @id_jogo_time
         and b.ID_Jogador = @id_jgd_sai
+        and b.ID_Time = @id_time
 		
       union all
 
@@ -103,6 +104,7 @@ begin
                                                    and b.ID_Jogo_Time = a.ID_Jogo_Time
       where a.ID_Jogo_Time = @id_jogo_time
         and b.ID_Jogador = @id_jgd_sai
+        and b.ID_Time = @id_time
 	  )
   begin
   set @retorno = (
@@ -196,6 +198,7 @@ begin
                                                    and b.ID_Jogo_Time = a.ID_Jogo_Time
       where a.ID_Jogo_Time = @id_jogo_time
         and b.ID_Jogador = @id_jgd_sai
+        and b.ID_Time = @id_time
 		
       union all
 
@@ -205,6 +208,7 @@ begin
                                                    and b.ID_Jogo_Time = a.ID_Jogo_Time
       where a.ID_Jogo_Time = @id_jogo_time
         and b.ID_Jogador = @id_jgd_sai
+        and b.ID_Time = @id_time
 	  )
   begin
   set @retorno = (
