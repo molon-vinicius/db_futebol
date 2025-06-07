@@ -5,8 +5,8 @@ as
    select concat(b.Descricao_Completa,' | ',b.Fase,' | ',b.Anfitriao,' x ',b.Visitante) as Desc_Jogo
         , a.minuto
         , c.Nome_Selecao
-        , d.Nome_Reduzido   as Jogador_Entrada
-        , e.Nome_Reduzido   as Jogador_Saida
+        , d.Nome_Reduzido   as Jogador_Saida
+        , e.Nome_Reduzido   as Jogador_Entrada
      from tb_jogos_selecoes_substituicoes a with(nolock)
      join vw_jogos_selecoes               b with(nolock)on b.ID_jogo_selecao = a.ID_jogo_selecao
      join tb_selecoes                     c with(nolock)on c.ID_Selecao = a.ID_Selecao
