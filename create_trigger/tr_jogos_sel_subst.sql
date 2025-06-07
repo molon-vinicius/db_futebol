@@ -95,6 +95,7 @@ begin
                                                       and b.ID_Jogo_Selecao = a.ID_Jogo_Selecao
       where a.ID_Jogo_Selecao = @id_jogo_sel
         and b.ID_Jogador = @id_jgd_sai
+        and b.ID_Selecao = @id_selecao
 		
       union all
 
@@ -104,6 +105,7 @@ begin
                                                       and b.ID_Jogo_Selecao = a.ID_Jogo_Selecao
       where a.ID_Jogo_Selecao = @id_jogo_sel
         and b.ID_Jogador = @id_jgd_sai
+        and b.ID_Selecao = @id_selecao
 	  )
   begin
   set @retorno = (
@@ -197,6 +199,7 @@ begin
                                                       and b.ID_Jogo_Selecao = a.ID_Jogo_Selecao
       where a.ID_Jogo_Selecao = @id_jogo_sel
         and b.ID_Jogador = @id_jgd_sai
+        and b.ID_Selecao = @id_selecao
 		
       union all
 
@@ -206,6 +209,7 @@ begin
                                                       and b.ID_Jogo_Selecao = a.ID_Jogo_Selecao
       where a.ID_Jogo_Selecao = @id_jogo_sel
         and b.ID_Jogador = @id_jgd_sai
+        and b.ID_Selecao = @id_selecao
 	  )
   begin
   set @retorno = (
