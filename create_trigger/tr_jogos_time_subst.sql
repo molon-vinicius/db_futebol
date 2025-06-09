@@ -1,9 +1,10 @@
-create trigger tr_jogos_time_subst 
-            on tb_jogos_times_substituicoes
+create or alter trigger tr_jogos_time_subst 
+                     on tb_jogos_times_substituicoes
 for insert, update 
 as
 
 begin
+
 declare @temporada    varchar(9)
 declare @id_jogo_time int
 declare @id_time      int
@@ -13,6 +14,7 @@ declare @id_anf       int
 declare @id_vis       int 
 declare @minuto       tinyint
 declare @retorno      varchar(150)
+declare @jgd_sai_sub char(1)
 
       select @id_jogo_time = ID_Jogo_Time
            , @id_time      = ID_Time
@@ -25,6 +27,12 @@ declare @retorno      varchar(150)
            , @id_vis = a.ID_Time_Visitante  
         from tb_jogos_times  a with(nolock)
        where a.ID_Jogo_Time = @id_jogo_time
+
+      select @jgd_sai_sub = 'S'
+        from tb_jogos_times_substituicoes with(nolock)
+       where ID_Jogo_Time = @id_jogo_time
+         and ID_Time = @id_time
+         and ID_Jogador_Entrada = @id_jgd_sai   
 
 if (select ID_Jogo_Time from deleted) is not null
 begin
@@ -105,7 +113,8 @@ begin
       where a.ID_Jogo_Time = @id_jogo_time
         and b.ID_Jogador = @id_jgd_sai
         and b.ID_Time = @id_time
-	  )
+   ) 
+   and isnull(@jgd_sai_sub,'N') = 'N'
   begin
   set @retorno = (
       select concat('O jogador de saída ''', b.Nome_Reduzido ,''' é inválido, pois não faz parte do elenco que iniciou a partida.')
@@ -209,7 +218,7 @@ begin
       where a.ID_Jogo_Time = @id_jogo_time
         and b.ID_Jogador = @id_jgd_sai
         and b.ID_Time = @id_time
-	  )
+	  ) and isnull(@jgd_sai_sub,'N') = 'N'
   begin
   set @retorno = (
       select concat('O jogador de saída ''', b.Nome_Reduzido ,''' é inválido, pois não faz parte do elenco que iniciou a partida.')
