@@ -1,5 +1,5 @@
-create trigger tr_jogos_sel_subst 
-            on tb_jogos_selecoes_substituicoes
+create or alter trigger tr_jogos_sel_subst 
+                     on tb_jogos_selecoes_substituicoes
 for insert, update 
  
 as
@@ -14,6 +14,7 @@ declare @id_anf      int
 declare @id_vis      int 
 declare @minuto      tinyint
 declare @retorno     varchar(150)
+declare @jgd_sai_sub char(1)
 
       select @id_jogo_sel = ID_Jogo_Selecao
            , @id_selecao  = ID_Selecao
@@ -26,6 +27,12 @@ declare @retorno     varchar(150)
            , @id_vis = a.ID_Selecao_Visitante  
         from tb_jogos_selecoes  a with(nolock)
        where a.ID_Jogo_Selecao = @id_jogo_sel
+
+      select @jgd_sai_sub = 'S'
+        from tb_jogos_selecoes_substituicoes with(nolock)
+       where ID_Jogo_Selecao = @id_jogo_sel
+         and ID_Selecao = @id_selecao
+         and ID_Jogador_Entrada = @id_jgd_sai   
 
 if (select ID_Jogo_Selecao from deleted) is not null
 begin
@@ -53,7 +60,7 @@ begin
      select b.ID_Jogador  as qtd 
        from tb_jogos_selecoes            a with(nolock)
        join tb_selecoes_elencos          b with(nolock)on b.ID_Selecao = a.ID_Selecao_Anfitriao
-                                                      and b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
+                                                      and b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao 
   left join tb_jogos_selecoes_anfitrioes c with(nolock)on c.ID_Selecao = b.ID_Selecao
                                                       and c.ID_Jogador = b.ID_Jogador
                                                       and c.ID_Jogo_Selecao = a.ID_Jogo_Selecao
@@ -87,7 +94,7 @@ begin
      raiserror (@retorno, 11, 127)
      rollback transaction
   end
-
+                 
   if not exists (  
      select b.ID_Jogador  as qtd 
        from tb_jogos_selecoes            a with(nolock)
@@ -106,7 +113,8 @@ begin
       where a.ID_Jogo_Selecao = @id_jogo_sel
         and b.ID_Jogador = @id_jgd_sai
         and b.ID_Selecao = @id_selecao
-	  )
+
+  ) and isnull(@jgd_sai_sub,'N') = 'N'
   begin
   set @retorno = (
       select concat('O jogador de saída ''', b.Nome_Reduzido ,''' é inválido, pois não faz parte do elenco que iniciou a partida.')
@@ -131,7 +139,7 @@ begin
   end
 end
 
-if (select ID_Jogo_Selecao from deleted) is null
+if (select ID_Jogo_Selecao from deleted)is null
 begin
   if @minuto > 120
   or @minuto = 0
@@ -163,7 +171,7 @@ begin
                                                       and c.ID_Jogo_Selecao = a.ID_Jogo_Selecao
       where c.ID_Jogador is null
         and a.ID_Selecao_Anfitriao = @id_selecao
-	and a.ID_Jogo_Selecao = @id_jogo_sel 
+        and a.ID_Jogo_Selecao = @id_jogo_sel 
         and b.ID_Jogador = @id_jgd_ent
 	
       union all
@@ -177,7 +185,7 @@ begin
                                                       and c.ID_Jogo_Selecao = a.ID_Jogo_Selecao
       where c.ID_Jogador is null
         and a.ID_Selecao_Visitante = @id_selecao
-	and a.ID_Jogo_Selecao = @id_jogo_sel 
+        and a.ID_Jogo_Selecao = @id_jogo_sel 
         and b.ID_Jogador = @id_jgd_ent
 	  ) is null
   begin
@@ -210,7 +218,7 @@ begin
       where a.ID_Jogo_Selecao = @id_jogo_sel
         and b.ID_Jogador = @id_jgd_sai
         and b.ID_Selecao = @id_selecao
-	  )
+      ) and isnull(@jgd_sai_sub,'N') = 'N'
   begin
   set @retorno = (
       select concat('O jogador de saída ''', b.Nome_Reduzido ,''' é inválido, pois não faz parte do elenco que iniciou a partida.')
