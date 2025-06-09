@@ -1,4 +1,4 @@
-create view vw_artilheiros_hist_camp_sel
+create or alter view vw_artilheiros_hist_camp_sel
 
 as
 
@@ -29,8 +29,9 @@ as  (
 
       select a.ID_Jogador                      as ID_Jogador
            , d.Nome_Reduzido                   as Jogador
-           , dbo.fn_jgd_sel_camp(a.ID_Jogador) as Selecao
-           , dbo.fn_jogadores_posicoes(a.ID_Jogador) as Posicoes	
+           , dbo.fn_jgd_sel_camp(a.ID_Jogador
+                               , c.Campeonato) as Selecao
+           , c.Campeonato                      as Campeonato
            , isnull(e.Jogos,0) 
            + isnull(f.Jogos,0)                 as Jogos
            , count(a.ID_jogo_selecao_evento)   as Gols
@@ -45,5 +46,6 @@ as  (
        where a.ID_tipo_evento in (1,5) 
        group by a.ID_Jogador 
               , d.Nome_Reduzido
+              , c.Campeonato
               , isnull(e.Jogos,0) 
               + isnull(f.Jogos,0)
