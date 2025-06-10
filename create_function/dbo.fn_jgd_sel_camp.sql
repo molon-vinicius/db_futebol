@@ -15,29 +15,20 @@ declare @selecoes table
        ,Campeonato varchar(100))
 
                insert into @selecoes (ID_Jogador, Nome_Selecao, Ano, Campeonato)
-               select distinct
-                      b.ID_Jogador
-                    , d.Nome_Selecao
-                    , c.Ano
-                    , c.Campeonato
-                 from tb_jogos_selecoes            a with(nolock)
-                 join tb_jogos_selecoes_anfitrioes b with(nolock)on a.ID_Jogo_Selecao = b.ID_Jogo_Selecao
-                 join vw_campeonatos               c with(nolock)on c.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
-                 join tb_selecoes                  d with(nolock)on d.ID_Selecao = b.ID_Selecao  
-                where ID_Jogador = @id_jogador
-
-                union 
-
-               select distinct
-                      b.ID_Jogador
-                    , d.Nome_Selecao
-                    , c.Ano
-                    , c.Campeonato
-                 from tb_jogos_selecoes            a with(nolock)
-                 join tb_jogos_selecoes_visitantes b with(nolock)on a.ID_Jogo_Selecao = b.ID_Jogo_Selecao
-                 join vw_campeonatos               c with(nolock)on c.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
-                 join tb_selecoes                  d with(nolock)on d.ID_Selecao = b.ID_Selecao  
-                where ID_Jogador = @id_jogador
+                    select b.ID_Jogador
+                         , d.Nome_Selecao
+                         , c.Ano
+                         , c.Campeonato
+                      from tb_campeonatos_edicoes_selecoes_part  a with(nolock)
+                      join tb_selecoes_elencos                   b with(nolock)on b.ID_Selecao = a.ID_Selecao
+                                                                              and b.ID_campeonato_edicao = a.ID_campeonato_edicao
+                      join vw_campeonatos                        c with(nolock)on c.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
+                      join tb_selecoes                           d with(nolock)on d.ID_Selecao = a.ID_selecao
+                     where b.ID_Jogador = @id_jogador
+                  group by b.ID_Jogador
+                         , d.Nome_Selecao
+                         , c.Ano
+                         , c.Campeonato  
 
 declare @aux char(1)
 
@@ -56,11 +47,11 @@ begin
    while (select count(Nome_Selecao) as qtd from @selecoes) > 0
    begin
 
-          select @ano = min(Ano) from @selecoes where Campeonato = @camp
+    select @ano = min(Ano) from @selecoes where Campeonato = @camp
 	
-             set @retorno = @retorno + (select concat(Ano, ' ', Nome_Selecao, ' ' ) from @selecoes where Ano = @ano and Campeonato = @camp)
+	   set @retorno = @retorno + (select concat(Ano, ' ', Nome_Selecao, ' ' ) from @selecoes where Ano = @ano and Campeonato = @camp)
 
-	  delete from @selecoes where Ano = @ano
+	   delete from @selecoes where Ano = @ano
    end
    
      set @retorno = rtrim(@retorno)
@@ -93,5 +84,8 @@ begin
    end
    
 end
-   return @retorno           
+   
+   return @retorno  
+         
 end  
+
