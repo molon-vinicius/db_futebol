@@ -47,11 +47,11 @@ begin
    while (select count(Nome_Selecao) as qtd from @selecoes) > 0
    begin
 
-    select @ano = min(Ano) from @selecoes where Campeonato = @camp
+          select @ano = min(Ano) from @selecoes where Campeonato = @camp
 	
-	   set @retorno = @retorno + (select concat(Ano, ' ', Nome_Selecao, ' ' ) from @selecoes where Ano = @ano and Campeonato = @camp)
+             set @retorno = @retorno + (select concat(Ano, ' ', Nome_Selecao, ' ' ) from @selecoes where Ano = @ano and Campeonato = @camp)
 
-	   delete from @selecoes where Ano = @ano
+          delete from @selecoes where Ano = @ano
    end
    
      set @retorno = rtrim(@retorno)
