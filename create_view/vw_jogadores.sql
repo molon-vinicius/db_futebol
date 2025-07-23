@@ -7,7 +7,8 @@ as
         , b.Nome_Reduzido
         , b.Altura
         , b.Data_Nascimento
-        , dbo.fn_pessoas_nacionalidade(b.Nome_Completo) as Nacionalidade
+        , dbo.fn_pessoas_nacionalidade(b.ID_Pessoa)     as Nacionalidade
+        , isnull(c.Nome_Cidade,'Não Informado')         as Cidade_Nascimento
         , isnull(c.Nome_Pais,d.Nome_Pais)               as Pais_Nascimento
         , dbo.fn_jogadores_posicoes(a.ID_Jogador)       as Posicoes
         , case when Ambidestro = 'S'
@@ -27,5 +28,4 @@ as
 left join vw_cidades      c with(nolock)on c.ID_Cidade = b.ID_Cidade_Nascimento
      join tb_paises       d with(nolock)on d.ID_Pais   = b.Pais_Preferencial
 
-
-
+	    
