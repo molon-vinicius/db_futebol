@@ -9,7 +9,7 @@ as
           , x.Fase
           , iif(c.ID_Selecao = x.ID_Anfitriao, Visitante, Anfitriao) as adversario
           , a.minuto  
-          , iif(b.ID_tipo_evento = 1, concat(b.Descricao, ' - Assist: ', e.Nome_Reduzido), b.Descricao)       as evento  
+          , iif(b.ID_tipo_evento = 1 and a.Assistencia is not null, concat(b.Descricao, ' - Assist: ', e.Nome_Reduzido), b.Descricao)       as evento  
           , c.Nome_Selecao  
           , d.Nome_Reduzido   as jogador  
           , a.observacao  
@@ -18,5 +18,4 @@ as
        join tb_tipos_eventos          b with(nolock)on b.ID_tipo_evento = a.ID_tipo_evento  
        join tb_selecoes               c with(nolock)on c.ID_Selecao = a.ID_selecao  
        join vw_jogadores              d with(nolock)on d.ID_jogador = a.ID_jogador 
-       join vw_jogadores              e with(nolock)on e.ID_jogador = a.Assistencia 
-
+  left join vw_jogadores              e with(nolock)on e.ID_jogador = a.Assistencia 
