@@ -3,6 +3,7 @@ alter view vw_jogos_selecoes_eventos
 as  
   
      select a.ID_jogo_selecao
+          , a.ID_jogo_selecao_evento  
           , x.Data_Jogo
           , x.Descricao_Completa  as campeonato
           , x.Fase
