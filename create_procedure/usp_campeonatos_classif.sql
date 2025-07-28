@@ -24,12 +24,12 @@ declare @fase_aux varchar(2)
 
 if (
 select case when len(a.Ano) > 4
-                 then substring(a.Ano, 0, 5)
-                 else a.Ano
-            end
-       from tb_campeonatos_edicoes a with(nolock)
-	   join tb_campeonatos         b with(nolock)on b.ID_Campeonato = a.ID_Campeonato
-      where a.ID_Campeonato_Edicao = @id_camp_edicao  ) >= 1995
+            then substring(a.Ano, 0, 5)
+            else a.Ano
+       end
+  from tb_campeonatos_edicoes a with(nolock)
+  join tb_campeonatos         b with(nolock)on b.ID_Campeonato = a.ID_Campeonato
+ where a.ID_Campeonato_Edicao = @id_camp_edicao  ) >= 1995
 begin
   set @pts_vitoria = 3
 end
