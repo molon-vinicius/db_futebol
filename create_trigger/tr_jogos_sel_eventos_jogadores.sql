@@ -1,5 +1,5 @@
-create trigger tr_jogos_sel_eventos_jogadores  
-            on tb_jogos_selecoes_eventos
+create or alter trigger tr_jogos_sel_eventos_jogadores  
+                     on tb_jogos_selecoes_eventos
 for insert, update 
  
 as
@@ -11,17 +11,21 @@ declare @id_jogo_sel int
 declare @id_evento   int
 declare @id_selecao  int
 declare @id_jogador  int
+declare @assist      int
 declare @id_anf      int
 declare @id_vis      int 
 declare @minuto      tinyint
 declare @minuto_ent  int
 declare @minuto_sai  int
+declare @min_ent_ast int
+declare @min_sai_ast int
 declare @retorno     varchar(150)
 
       select @id_jogo_sel = ID_Jogo_Selecao
            , @id_evento   = ID_Tipo_Evento
            , @id_selecao  = ID_Selecao
            , @id_jogador  = ID_Jogador
+           , @assist      = Assistencia
            , @minuto      = Minuto
         from inserted
 
@@ -42,6 +46,18 @@ declare @retorno     varchar(150)
        where a.ID_Jogo_Selecao = @id_jogo_sel
          and a.ID_Selecao = @id_selecao
          and a.ID_Jogador_Saida = @id_jogador
+
+      select @min_ent_ast = a.Minuto
+        from tb_jogos_selecoes_substituicoes a with(nolock)
+       where a.ID_Jogo_Selecao = @id_jogo_sel
+         and a.ID_Selecao = @id_selecao
+         and a.ID_Jogador_Entrada = @assist
+
+      select @min_sai_ast = a.Minuto
+        from tb_jogos_selecoes_substituicoes a with(nolock)
+       where a.ID_Jogo_Selecao = @id_jogo_sel
+         and a.ID_Selecao = @id_selecao
+         and a.ID_Jogador_Saida = @assist
 
 if (select ID_Jogo_Selecao from deleted) is not null
 begin
@@ -74,6 +90,27 @@ begin
 
 end
 
+if @assist = @id_jogador
+begin
+     raiserror ('Jogador que fez o gol não pode ser o mesmo que deu a assistência.', 11, 127)
+     rollback transaction
+end
+
+if @id_evento = 2  /* 2-Cartão Amarelo */
+and ( 
+   select count(ID_Tipo_Evento) as Evento
+     from tb_jogos_selecoes_eventos with(nolock)
+    where ID_jogo_selecao = @id_jogo_sel
+      and ID_jogador = @id_jogador
+      and ID_Tipo_Evento = @id_evento
+) > 2
+begin
+   begin
+     raiserror ('Jogador não pode receber mais de 2 cartões amarelos.', 11, 127)
+     rollback transaction
+   end
+end
+
 if @id_evento in (1,5,6,7,8) /* 1-Gol | 5-Gol (P) | 6-Pênalti (X) | 7-Gol Anulado | 8-Gol Contra */
 begin
   if not exists (
@@ -103,9 +140,10 @@ begin
        join tb_selecoes_elencos             b with(nolock)on b.ID_Selecao = a.ID_Selecao_Anfitriao
                                                          and b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
        join tb_jogos_selecoes_substituicoes c with(nolock)on c.ID_Selecao = b.ID_Selecao
+                                                         and c.ID_Jogo_Selecao = a.ID_jogo_selecao
                                                          and c.ID_jogador_entrada = b.ID_Jogador
       where a.ID_Selecao_Anfitriao = @id_selecao
-	and a.ID_Jogo_Selecao = @id_jogo_sel 
+        and a.ID_Jogo_Selecao = @id_jogo_sel 
         and b.ID_Jogador = @id_jogador
 
       union all
@@ -115,9 +153,10 @@ begin
        join tb_selecoes_elencos             b with(nolock)on b.ID_Selecao = a.ID_Selecao_Visitante
                                                          and b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
        join tb_jogos_selecoes_substituicoes c with(nolock)on c.ID_Selecao = b.ID_Selecao
+                                                         and c.ID_Jogo_Selecao = a.ID_jogo_selecao
                                                          and c.ID_Jogador_Entrada = b.ID_Jogador
       where a.ID_Selecao_Visitante = @id_selecao
-	and a.ID_Jogo_Selecao = @id_jogo_sel 
+        and a.ID_Jogo_Selecao = @id_jogo_sel 
         and b.ID_Jogador = @id_jogador
 	  )
   begin     
@@ -136,6 +175,98 @@ begin
         raiserror (@retorno, 11, 127)
         rollback transaction
      end
+  end
+
+if @id_evento = 1 /* 1-Gol */
+and @assist is not null
+begin
+  if not exists (
+
+     select b.ID_Jogador  as qtd 
+       from tb_jogos_selecoes            a with(nolock)
+       join tb_jogos_selecoes_anfitrioes b with(nolock)on b.ID_Selecao = a.ID_Selecao_Anfitriao
+                                                      and b.ID_Jogo_Selecao = a.ID_Jogo_Selecao
+      where a.ID_Jogo_Selecao = @id_jogo_sel
+        and a.ID_Selecao_Anfitriao = @id_selecao
+        and b.ID_Jogador = @assist
+		
+      union all
+
+     select b.ID_Jogador  as qtd 
+       from tb_jogos_selecoes            a with(nolock)
+       join tb_jogos_selecoes_visitantes b with(nolock)on b.ID_Selecao = a.ID_Selecao_Visitante
+                                                      and b.ID_Jogo_Selecao = a.ID_Jogo_Selecao
+      where a.ID_Jogo_Selecao = @id_jogo_sel
+        and a.ID_Selecao_Visitante = @id_selecao
+        and b.ID_Jogador = @assist
+	  
+      union all
+
+     select b.ID_Jogador  as qtd 
+       from tb_jogos_selecoes               a with(nolock)
+       join tb_selecoes_elencos             b with(nolock)on b.ID_Selecao = a.ID_Selecao_Anfitriao
+                                                         and b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
+       join tb_jogos_selecoes_substituicoes c with(nolock)on c.ID_Selecao = b.ID_Selecao
+                                                         and c.ID_Jogo_Selecao = a.ID_jogo_selecao
+                                                         and c.ID_jogador_entrada = b.ID_Jogador
+      where a.ID_Selecao_Anfitriao = @id_selecao
+        and a.ID_Jogo_Selecao = @id_jogo_sel 
+        and c.ID_Jogador_Entrada = @assist
+
+      union all
+
+     select b.ID_Jogador  as qtd 
+       from tb_jogos_selecoes               a with(nolock)
+       join tb_selecoes_elencos             b with(nolock)on b.ID_Selecao = a.ID_Selecao_Visitante
+                                                         and b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
+       join tb_jogos_selecoes_substituicoes c with(nolock)on c.ID_Selecao = b.ID_Selecao
+                                                         and c.ID_Jogo_Selecao = a.ID_jogo_selecao
+                                                         and c.ID_Jogador_Entrada = b.ID_Jogador
+      where a.ID_Selecao_Visitante = @id_selecao
+        and a.ID_Jogo_Selecao = @id_jogo_sel 
+        and b.ID_Jogador = @assist
+	  )
+  begin   
+       set @retorno = ( 
+    select concat('O jogador (assistência) ''', b.Nome_Reduzido ,''' não faz parte do elenco ou não entrou durante a partida.')
+      from tb_jogadores a with(nolock)
+      join tb_pessoas   b with(nolock)on b.ID_Pessoa = a.ID_Pessoa
+     where a.ID_Jogador = @assist
+	)
+       if @retorno is null 
+       begin 
+         set @retorno = 'Jogador (assistência) informado não existe.' 
+       end 
+     raiserror (@retorno, 11, 127)
+     rollback transaction
+  end
+
+  end
+
+  if @min_ent_ast is not null
+  and @minuto < @min_ent_ast
+  begin
+     set @retorno = (
+         select concat('O jogador (assistência) ''', b.Nome_Reduzido , ''' entrou aos ', @min_ent_ast ,''', não é possível salvar esse tipo de evento antes do minuto informado.')
+           from tb_jogadores a with(nolock)
+           join tb_pessoas   b with(nolock)on b.ID_Pessoa = a.ID_Pessoa
+          where a.ID_Jogador = @assist
+	     )
+     raiserror (@retorno, 11, 127)
+     rollback transaction
+  end
+
+  if @min_sai_ast is not null
+  and @minuto > @min_sai_ast
+  begin
+     set @retorno = (
+         select concat('O jogador (assistência) ''', b.Nome_Reduzido , ''' saiu aos ', @min_sai_ast ,''', não é possível salvar esse tipo de evento após o minuto informado.')
+           from tb_jogadores a with(nolock)
+           join tb_pessoas   b with(nolock)on b.ID_Pessoa = a.ID_Pessoa
+          where a.ID_Jogador = @assist
+	     )
+     raiserror (@retorno, 11, 127)
+     rollback transaction  
   end
 
   if @minuto_ent is not null
@@ -178,7 +309,7 @@ begin
        rollback transaction
     end
     if @id_selecao = @id_vis
-    and not exists ( 
+	and not exists ( 
         select a.ID_Jogador
           from tb_jogos_selecoes_anfitrioes  a with(nolock)
          where a.ID_Jogo_Selecao = @id_jogo_sel
@@ -188,6 +319,7 @@ begin
        raiserror ('Não é possível contabilizar o gol contra, pois o jogador informado não faz parte do time adversário, .', 11, 127)
        rollback transaction
     end
+
   end
 
 end
@@ -225,6 +357,27 @@ begin
 
 end
 
+if @assist = @id_jogador
+begin
+     raiserror ('Jogador que fez o gol não pode ser o mesmo que deu a assistência.', 11, 127)
+     rollback transaction
+end
+
+if @id_evento = 2  /* 2-Cartão Amarelo */
+and ( 
+   select count(ID_Tipo_Evento) as Evento
+     from tb_jogos_selecoes_eventos with(nolock)
+    where ID_jogo_selecao = @id_jogo_sel
+      and ID_jogador = @id_jogador
+      and ID_Tipo_Evento = @id_evento
+) > 2
+begin
+   begin
+     raiserror ('Jogador não pode receber mais de 2 cartões amarelos.', 11, 127)
+     rollback transaction
+   end
+end
+
 if @id_evento in (1,5,6,7,8) /* 1-Gol | 5-Gol (P) | 6-Pênalti (X) | 7-Gol Anulado | 8-Gol Contra */
 begin
   if not exists (
@@ -254,9 +407,10 @@ begin
        join tb_selecoes_elencos             b with(nolock)on b.ID_Selecao = a.ID_Selecao_Anfitriao
                                                          and b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
        join tb_jogos_selecoes_substituicoes c with(nolock)on c.ID_Selecao = b.ID_Selecao
+                                                         and c.ID_Jogo_Selecao = a.ID_jogo_selecao
                                                          and c.ID_jogador_entrada = b.ID_Jogador
       where a.ID_Selecao_Anfitriao = @id_selecao
-	and a.ID_Jogo_Selecao = @id_jogo_sel 
+        and a.ID_Jogo_Selecao = @id_jogo_sel 
         and b.ID_Jogador = @id_jogador
 
       union all
@@ -266,6 +420,7 @@ begin
        join tb_selecoes_elencos             b with(nolock)on b.ID_Selecao = a.ID_Selecao_Visitante
                                                          and b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
        join tb_jogos_selecoes_substituicoes c with(nolock)on c.ID_Selecao = b.ID_Selecao
+                                                         and c.ID_Jogo_Selecao = a.ID_jogo_selecao
                                                          and c.ID_Jogador_Entrada = b.ID_Jogador
       where a.ID_Selecao_Visitante = @id_selecao
 	and a.ID_Jogo_Selecao = @id_jogo_sel 
@@ -287,6 +442,98 @@ begin
         raiserror (@retorno, 11, 127)
         rollback transaction
      end
+  end
+
+if @id_evento = 1 /* 1-Gol */
+and @assist is not null
+begin
+  if not exists (
+
+     select b.ID_Jogador  as qtd 
+       from tb_jogos_selecoes            a with(nolock)
+       join tb_jogos_selecoes_anfitrioes b with(nolock)on b.ID_Selecao = a.ID_Selecao_Anfitriao
+                                                      and b.ID_Jogo_Selecao = a.ID_Jogo_Selecao
+      where a.ID_Jogo_Selecao = @id_jogo_sel
+        and a.ID_Selecao_Anfitriao = @id_selecao
+        and b.ID_Jogador = @assist
+		
+      union all
+
+     select b.ID_Jogador  as qtd 
+       from tb_jogos_selecoes            a with(nolock)
+       join tb_jogos_selecoes_visitantes b with(nolock)on b.ID_Selecao = a.ID_Selecao_Visitante
+                                                      and b.ID_Jogo_Selecao = a.ID_Jogo_Selecao
+      where a.ID_Jogo_Selecao = @id_jogo_sel
+        and a.ID_Selecao_Visitante = @id_selecao
+        and b.ID_Jogador = @assist
+	  
+      union all
+
+     select b.ID_Jogador  as qtd 
+       from tb_jogos_selecoes               a with(nolock)
+       join tb_selecoes_elencos             b with(nolock)on b.ID_Selecao = a.ID_Selecao_Anfitriao
+                                                         and b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
+       join tb_jogos_selecoes_substituicoes c with(nolock)on c.ID_Selecao = b.ID_Selecao
+                                                         and c.ID_Jogo_Selecao = a.ID_jogo_selecao
+                                                         and c.ID_jogador_entrada = b.ID_Jogador
+      where a.ID_Selecao_Anfitriao = @id_selecao
+        and a.ID_Jogo_Selecao = @id_jogo_sel 
+        and c.ID_Jogador_Entrada = @assist
+
+      union all
+
+     select b.ID_Jogador  as qtd 
+       from tb_jogos_selecoes               a with(nolock)
+       join tb_selecoes_elencos             b with(nolock)on b.ID_Selecao = a.ID_Selecao_Visitante
+                                                         and b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
+       join tb_jogos_selecoes_substituicoes c with(nolock)on c.ID_Selecao = b.ID_Selecao
+                                                         and c.ID_Jogo_Selecao = a.ID_jogo_selecao
+                                                         and c.ID_Jogador_Entrada = b.ID_Jogador
+      where a.ID_Selecao_Visitante = @id_selecao
+        and a.ID_Jogo_Selecao = @id_jogo_sel 
+        and b.ID_Jogador = @assist
+	  )
+  begin   
+       set @retorno = ( 
+    select concat('O jogador (assistência) ''', b.Nome_Reduzido ,''' não faz parte do elenco ou não entrou durante a partida.')
+      from tb_jogadores a with(nolock)
+      join tb_pessoas   b with(nolock)on b.ID_Pessoa = a.ID_Pessoa
+     where a.ID_Jogador = @assist
+	)
+       if @retorno is null 
+       begin 
+         set @retorno = 'Jogador (assistência) informado não existe.' 
+       end 
+     raiserror (@retorno, 11, 127)
+     rollback transaction
+  end
+
+  if @min_ent_ast is not null
+  and @minuto < @min_ent_ast
+  begin
+     set @retorno = (
+         select concat('O jogador (assistência) ''', b.Nome_Reduzido , ''' entrou aos ', @min_ent_ast ,''', não é possível salvar esse tipo de evento antes do minuto informado.')
+           from tb_jogadores a with(nolock)
+           join tb_pessoas   b with(nolock)on b.ID_Pessoa = a.ID_Pessoa
+          where a.ID_Jogador = @assist
+	     )
+     raiserror (@retorno, 11, 127)
+     rollback transaction
+  end
+
+  if @min_sai_ast is not null
+  and @minuto > @min_sai_ast
+  begin
+     set @retorno = (
+         select concat('O jogador (assistência) ''', b.Nome_Reduzido , ''' saiu aos ', @min_sai_ast ,''', não é possível salvar esse tipo de evento após o minuto informado.')
+           from tb_jogadores a with(nolock)
+           join tb_pessoas   b with(nolock)on b.ID_Pessoa = a.ID_Pessoa
+          where a.ID_Jogador = @assist
+	     )
+     raiserror (@retorno, 11, 127)
+     rollback transaction  
+  end
+
   end
 
   if @minuto_ent is not null
@@ -328,7 +575,6 @@ begin
        raiserror ('Não é possível contabilizar o gol contra, pois o jogador informado não faz parte do time adversário, .', 11, 127)
        rollback transaction
     end
-    
     if @id_selecao = @id_vis
     and not exists ( 
         select a.ID_Jogador
@@ -340,6 +586,7 @@ begin
        raiserror ('Não é possível contabilizar o gol contra, pois o jogador informado não faz parte do time adversário, .', 11, 127)
        rollback transaction
     end
+
   end
 
 end
