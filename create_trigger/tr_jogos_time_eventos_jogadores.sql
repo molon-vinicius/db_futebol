@@ -99,6 +99,13 @@ begin
      rollback transaction
 end
 
+if @id_evento <> 2
+and @assist is not null
+begin
+     raiserror ('Assistência só pode ser vinculada com o evento [2] Gol.', 11, 127)
+     rollback transaction
+end
+	
 if @id_evento = 2  /* 2-Cartão Amarelo */
 and ( 
    select count(ID_Tipo_Evento) as Evento
@@ -363,6 +370,19 @@ begin
 
 end
 
+if @assist = @id_jogador
+begin
+     raiserror ('Jogador que fez o gol não pode ser o mesmo que deu a assistência.', 11, 127)
+     rollback transaction
+end
+
+if @id_evento <> 2
+and @assist is not null
+begin
+     raiserror ('Assistência só pode ser vinculada com o evento [2] Gol.', 11, 127)
+     rollback transaction
+end
+	
 if @id_evento in (1,5,6,7,8) /* 1-Gol | 5-Gol (P) | 6-Pênalti (X) | 7-Gol Anulado | 8-Gol Contra */
 begin
   if not exists (
