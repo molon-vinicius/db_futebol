@@ -96,6 +96,13 @@ begin
      rollback transaction
 end
 
+if @id_evento <> 2
+and @assist is not null
+begin
+     raiserror ('Assistência só pode ser vinculada com o evento [2] Gol.', 11, 127)
+     rollback transaction
+end
+	
 if @id_evento = 2  /* 2-Cartão Amarelo */
 and ( 
    select count(ID_Tipo_Evento) as Evento
@@ -363,6 +370,13 @@ begin
      rollback transaction
 end
 
+if @id_evento <> 2
+and @assist is not null
+begin
+     raiserror ('Assistência só pode ser vinculada com o evento [2] Gol.', 11, 127)
+     rollback transaction
+end
+		
 if @id_evento = 2  /* 2-Cartão Amarelo */
 and ( 
    select count(ID_Tipo_Evento) as Evento
