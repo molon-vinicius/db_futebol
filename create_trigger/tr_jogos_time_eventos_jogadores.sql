@@ -16,6 +16,7 @@ declare @assist       int
 declare @id_anf       int
 declare @id_vis       int 
 declare @minuto       tinyint
+declare @acresc       tinyint
 declare @minuto_ent   int
 declare @minuto_sai   int
 declare @min_ent_ast  int
@@ -28,6 +29,7 @@ declare @retorno      varchar(150)
            , @id_jogador   = ID_Jogador
            , @assist       = Assistencia
 	   , @minuto       = Minuto
+	   , @acresc       = Acrescimos
         from inserted
 
       select @id_camp_ed = a.ID_Campeonato_Edicao
