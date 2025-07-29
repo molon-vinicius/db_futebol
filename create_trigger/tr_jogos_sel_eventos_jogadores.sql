@@ -68,6 +68,13 @@ begin
      rollback transaction
   end
 
+  if @minuto not in (45, 90, 105, 120)
+  and @acresc is not null
+  begin
+     raiserror ('Só pode ter tempo de acréscimo se o minuto for 45/90/105/120.', 11, 127)
+     rollback transaction
+  end
+		
   if  @id_selecao <> @id_anf
   and @id_selecao <> @id_vis
   begin
@@ -342,6 +349,13 @@ begin
      rollback transaction
   end
 
+  if @minuto not in (45, 90, 105, 120)
+  and @acresc is not null
+  begin
+     raiserror ('Só pode ter tempo de acréscimo se o minuto for 45/90/105/120.', 11, 127)
+     rollback transaction
+  end
+	
   if  @id_selecao <> @id_anf
   and @id_selecao <> @id_vis
   begin
