@@ -73,6 +73,13 @@ begin
      rollback transaction
   end
 
+  if @minuto not in (45, 90, 105, 120)
+  and @acresc is not null
+  begin
+     raiserror ('Só pode ter tempo de acréscimo se o minuto for 45/90/105/120.', 11, 127)
+     rollback transaction
+  end	
+
   if  @id_time <> @id_anf
   and @id_time <> @id_vis
   begin
@@ -187,7 +194,6 @@ begin
      raiserror (@retorno, 11, 127)
      rollback transaction
   end
-
 
 if @id_evento = 1 /* 1-Gol */
 and @assist is not null
@@ -348,6 +354,13 @@ begin
      rollback transaction
   end
 
+  if @minuto not in (45, 90, 105, 120)
+  and @acresc is not null
+  begin
+     raiserror ('Só pode ter tempo de acréscimo se o minuto for 45/90/105/120.', 11, 127)
+     rollback transaction
+  end
+	
   if  @id_time <> @id_anf
   and @id_time <> @id_vis
   begin
