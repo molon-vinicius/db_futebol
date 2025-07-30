@@ -108,10 +108,10 @@ begin
      rollback transaction
 end
 
-if @id_evento <> 2
+if @id_evento <> 1
 and @assist is not null
 begin
-     raiserror ('Assistência só pode ser vinculada com o evento [2] Gol.', 11, 127)
+     raiserror ('Assistência só pode ser vinculada com o evento [1] Gol.', 11, 127)
      rollback transaction
 end
 	
@@ -391,10 +391,10 @@ begin
      rollback transaction
 end
 
-if @id_evento <> 2
+if @id_evento <> 1
 and @assist is not null
 begin
-     raiserror ('Assistência só pode ser vinculada com o evento [2] Gol.', 11, 127)
+     raiserror ('Assistência só pode ser vinculada com o evento [1] Gol.', 11, 127)
      rollback transaction
 end
 	
