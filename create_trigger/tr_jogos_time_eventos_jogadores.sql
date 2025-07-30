@@ -114,7 +114,7 @@ begin
      raiserror ('Assistência só pode ser vinculada com o evento [1] Gol.', 11, 127)
      rollback transaction
 end
-	
+
 if @id_evento = 2  /* 2-Cartão Amarelo */
 and ( 
    select count(ID_Tipo_Evento) as Evento
@@ -320,21 +320,21 @@ if @id_evento = 8
   begin
     if @id_time = @id_anf
     and not exists ( 
-        select a.ID_Jogador
-          from tb_jogos_times_visitantes  a with(nolock)
-         where a.ID_Jogo_Time = @id_jogo_time
-           and a.ID_Jogador = @id_jogador
+     select a.ID_Jogador
+       from tb_jogos_times_visitantes  a with(nolock)
+      where a.ID_Jogo_Time = @id_jogo_time
+        and a.ID_Jogador = @id_jogador
 	)
     begin
        raiserror ('Não é possível contabilizar o gol contra, pois o jogador informado não faz parte do time adversário, .', 11, 127)
        rollback transaction
     end
     if @id_time = @id_vis
-	and not exists ( 
-        select a.ID_Jogador
-          from tb_jogos_times_anfitrioes  a with(nolock)
-         where a.ID_Jogo_Time = @id_jogo_time
-           and a.ID_Jogador = @id_jogador
+    and not exists ( 
+     select a.ID_Jogador
+       from tb_jogos_times_anfitrioes  a with(nolock)
+      where a.ID_Jogo_Time = @id_jogo_time
+        and a.ID_Jogador = @id_jogador
 	)
     begin
        raiserror ('Não é possível contabilizar o gol contra, pois o jogador informado não faz parte do time adversário, .', 11, 127)
@@ -361,8 +361,8 @@ begin
   begin
      raiserror ('Só pode ter tempo de acréscimo se o minuto for 45/90/105/120.', 11, 127)
      rollback transaction
-  end
-	
+  end	
+
   if  @id_time <> @id_anf
   and @id_time <> @id_vis
   begin
@@ -397,7 +397,7 @@ begin
      raiserror ('Assistência só pode ser vinculada com o evento [1] Gol.', 11, 127)
      rollback transaction
 end
-	
+
 if @id_evento in (1,5,6,7,8) /* 1-Gol | 5-Gol (P) | 6-Pênalti (X) | 7-Gol Anulado | 8-Gol Contra */
 begin
   if not exists (
@@ -421,7 +421,7 @@ begin
         and a.ID_Time_Visitante = @id_time
         and b.ID_Jogador = @id_jogador
 	and a.ID_Campeonato_Edicao = @id_camp_ed
-  
+	  
       union all
 
      select b.ID_Jogador  as qtd 
@@ -459,6 +459,72 @@ begin
   if @retorno is null begin set @retorno = 'Jogador informado não existe.' end 
      raiserror (@retorno, 11, 127)
      rollback transaction
+  end
+
+if @id_evento = 1 /* 1-Gol */
+and @assist is not null
+begin
+  if not exists (
+
+     select b.ID_Jogador  as qtd 
+       from tb_jogos_times            a with(nolock)
+       join tb_jogos_times_anfitrioes b with(nolock)on b.ID_time = a.ID_time_anfitriao
+                                                   and b.ID_jogo_time = a.ID_Jogo_Time
+      where a.ID_Jogo_Time = @id_jogo_time
+        and a.ID_Time_Anfitriao = @id_time
+        and b.ID_Jogador = @assist
+		
+      union all
+
+     select b.ID_Jogador  as qtd 
+       from tb_jogos_times            a with(nolock)
+       join tb_jogos_times_visitantes b with(nolock)on b.ID_time = a.ID_time_visitante
+                                                   and b.ID_jogo_time = a.ID_jogo_time
+      where a.ID_Jogo_Time = @id_jogo_time
+        and a.ID_Time_Visitante = @id_time
+        and b.ID_Jogador = @assist
+	  
+      union all
+
+     select b.ID_Jogador  as qtd 
+       from tb_jogos_times               a with(nolock)
+       join tb_times_elencos             b with(nolock)on b.ID_time = a.ID_time_anfitriao
+                                                      and b.Temporada = @temporada
+       join tb_jogos_times_substituicoes c with(nolock)on c.ID_Time = b.ID_Time
+                                                      and c.ID_Jogo_Time = a.ID_jogo_time
+                                                      and c.ID_jogador_entrada = b.ID_Jogador
+      where a.ID_Time_Anfitriao = @id_time
+        and a.ID_Jogo_Time = @id_jogo_time 
+        and c.ID_Jogador_Entrada = @assist
+
+      union all
+
+     select b.ID_Jogador  as qtd 
+       from tb_jogos_times               a with(nolock)
+       join tb_times_elencos             b with(nolock)on b.ID_Time = a.ID_Time_Visitante
+                                                      and b.Temporada = @temporada
+       join tb_jogos_times_substituicoes c with(nolock)on c.ID_Time = b.ID_Time
+                                                      and c.ID_Jogo_Time = a.ID_jogo_time
+                                                      and c.ID_Jogador_Entrada = b.ID_Jogador
+      where a.ID_Time_Visitante = @id_time
+        and a.ID_Jogo_Time = @id_jogo_time 
+        and b.ID_Jogador = @assist
+	  )
+  begin   
+       set @retorno = ( 
+    select concat('O jogador (assistência) ''', b.Nome_Reduzido ,''' não faz parte do elenco ou não entrou durante a partida.')
+      from tb_jogadores a with(nolock)
+      join tb_pessoas   b with(nolock)on b.ID_Pessoa = a.ID_Pessoa
+     where a.ID_Jogador = @assist
+	)
+       if @retorno is null 
+       begin 
+         set @retorno = 'Jogador (assistência) informado não existe.' 
+       end 
+     raiserror (@retorno, 11, 127)
+     rollback transaction
+  end
+
   end
 
   if @minuto_ent is not null
