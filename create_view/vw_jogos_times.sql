@@ -39,7 +39,7 @@ left join (
               , count(ID_tipo_evento) as gols
               , ID_time
            from tb_jogos_times_eventos  with(nolock)
-          where ID_tipo_evento in (1, 4, 5, 8) -- Gol, Gol Olímpico, Gol (P), Gol Contra
+          where ID_tipo_evento in (1, 4, 5, 8, 9) -- Gol, Gol Olímpico, Gol (P), Gol Contra, Gol de Falta
           group by ID_jogo_time, ID_time
                                      ) a             on a.ID_jogo_time = src.ID_jogo_time
                                                     and a.ID_time = src.ID_time_anfitriao
@@ -49,7 +49,7 @@ left join (
               , count(ID_tipo_evento) as gols
               , ID_time
            from tb_jogos_times_eventos  with(nolock)
-          where ID_tipo_evento in (1, 4, 5, 8) -- Gol, Gol Olímpico, Gol (P), Gol Contra
+          where ID_tipo_evento in (1, 4, 5, 8, 9) -- Gol, Gol Olímpico, Gol (P), Gol Contra, Gol de Falta
           group by ID_jogo_time, ID_time
                                      ) v             on v.ID_jogo_time = src.ID_jogo_time
                                                     and v.ID_time = src.ID_time_visitante		 
