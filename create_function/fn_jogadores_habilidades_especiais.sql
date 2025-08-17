@@ -39,6 +39,7 @@ begin
 end
 
   select @rtn = substring(@rtn, 0, len(@rtn))
+  select @rtn = replace(@rtn, '_', ' ') 
 
   return @rtn
 
