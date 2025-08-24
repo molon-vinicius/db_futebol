@@ -29,6 +29,7 @@ begin
                   then concat(c.Nome_Reduzido, ' (C)')
                   else c.Nome_Reduzido
              end                 as Nome_Reduzido
+           , dbo.fn_id_posicao_preferencial(a.id_jogador)  as ID_Pos_Pref 
            , dbo.fn_jogadores_posicoes(a.id_jogador) as Posicoes
         from tb_jogos_selecoes            x with(nolock)
         join tb_selecoes_elencos          a with(nolock)on a.ID_selecao = x.ID_selecao_anfitriao
