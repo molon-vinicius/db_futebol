@@ -5,6 +5,7 @@ returns @elenco table
 ,capitao varchar(1)
 ,id_jogador int
 ,nome_reduzido varchar(60)
+,id_pos_pref tinyint  
 ,posicoes varchar(60))
 
 as 
