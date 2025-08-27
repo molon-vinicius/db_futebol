@@ -20,7 +20,7 @@ as
 			, vis.ID_Selecao                       as ID_Visitante
 			, vis.Nome_Selecao                     as Visitante
             , convert(varchar(12), case when pen_vis.ID_jogo_selecao is not null
-                                        then '(' + convert(varchar(3), pen_vis.Gols) + ') ' + convert(varchar(3), isnull(a.gols,0))
+                                        then convert(varchar(3), isnull(v.gols,0)) + ' (' + convert(varchar(3), pen_vis.Gols) + ')'
                                         else convert(varchar(3), isnull(v.gols,0))
                                    end )           as Gols_Visitante
             , arb.Nome_Reduzido                    as Arbitro_Principal
@@ -97,7 +97,7 @@ as
                , vis.ID_Selecao
 			   , vis.Nome_Selecao
                , convert(varchar(12), case when pen_vis.ID_jogo_selecao is not null
-                                           then '(' + convert(varchar(3), pen_vis.Gols) + ') ' + convert(varchar(3), isnull(a.gols,0))
+                                           then convert(varchar(3), isnull(v.gols,0)) + ' (' + convert(varchar(3), pen_vis.Gols) + ')'
                                            else convert(varchar(3), isnull(v.gols,0))
                                       end )
                , arb.Nome_Reduzido
