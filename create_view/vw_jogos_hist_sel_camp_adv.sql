@@ -26,40 +26,40 @@ as  (
           , sum(x.Gols_Pro)    as Gols_Pro
           , sum(x.Gols_Contra) as Gols_Contra
        from (
-           select count(a.ID_Jogo_Selecao) as Jogos
-                , a.ID_Anfitriao           as ID_Selecao
-                , a.ID_Visitante           as ID_Adversario
+           select count(a.ID_Jogo_Selecao)    as Jogos
+                , a.ID_Anfitriao              as ID_Selecao
+                , a.ID_Visitante              as ID_Adversario
                 , b.ID_Campeonato
                 , c.Descricao
-                , sum(iif(a.Gols_Anfitriao > a.Gols_Visitante, 1, 0)) as Vitorias
-                , sum(iif(a.Gols_Anfitriao = a.Gols_Visitante, 1, 0)) as Empates
-                , sum(iif(a.Gols_Anfitriao < a.Gols_Visitante, 1, 0)) as Derrotas
-                , sum(a.Gols_Anfitriao)    as Gols_Pro                      
-                , sum(a.Gols_Visitante)    as Gols_Contra
+                , sum(iif(a.GA > a.GV, 1, 0)) as Vitorias
+                , sum(iif(a.GA = a.GV, 1, 0)) as Empates
+                , sum(iif(a.GA < a.GV, 1, 0)) as Derrotas
+                , sum(a.GA)                   as Gols_Pro                      
+                , sum(a.GV)                   as Gols_Contra
              from vw_jogos_selecoes               a with(nolock)
              join tb_campeonatos_edicoes          b with(nolock)on b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
              join tb_campeonatos                  c with(nolock)on c.ID_Campeonato = b.ID_Campeonato
-            group by a.ID_Anfitriao
+		    group by a.ID_Anfitriao
                    , a.ID_Visitante
                    , c.Descricao
                    , b.ID_Campeonato 
               
             union all
 
-           select count(a.ID_Jogo_Selecao) as Jogos
-                , a.ID_Visitante           as ID_Selecao
-                , a.ID_Anfitriao           as ID_Adversario
+           select count(a.ID_Jogo_Selecao)    as Jogos
+                , a.ID_Visitante              as ID_Selecao
+                , a.ID_Anfitriao              as ID_Adversario
                 , b.ID_Campeonato
                 , c.Descricao
-                , sum(iif(a.Gols_Visitante > a.Gols_Anfitriao, 1, 0)) as Vitorias
-                , sum(iif(a.Gols_Visitante = a.Gols_Anfitriao, 1, 0)) as Empates
-                , sum(iif(a.Gols_Visitante < a.Gols_Anfitriao, 1, 0)) as Derrotas
-                , sum(a.Gols_Visitante)    as Gols_Pro                      
-                , sum(a.Gols_Anfitriao)    as Gols_Contra
+                , sum(iif(a.GV > a.GA, 1, 0)) as Vitorias
+                , sum(iif(a.GV = a.GA, 1, 0)) as Empates
+                , sum(iif(a.GV < a.GA, 1, 0)) as Derrotas
+                , sum(a.GV)                   as Gols_Pro                      
+                , sum(a.GA)                   as Gols_Contra
              from vw_jogos_selecoes               a with(nolock)
              join tb_campeonatos_edicoes          b with(nolock)on b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
              join tb_campeonatos                  c with(nolock)on c.ID_Campeonato = b.ID_Campeonato
-            group by a.ID_Visitante
+		    group by a.ID_Visitante
                    , a.ID_Anfitriao
                    , c.Descricao
                    , b.ID_Campeonato   )            x
@@ -82,7 +82,8 @@ as  (
            , a.Gols_Contra           as Gols_Contra
            , a.Gols_Pro 
            - a.Gols_Contra           as Saldo         
-        from cte_qtd_jogos             a with(nolock)
+		from cte_qtd_jogos             a with(nolock)
         join tb_selecoes               b with(nolock)on b.ID_Selecao = a.ID_Selecao
         join tb_campeonatos            c with(nolock)on c.ID_Campeonato = a.ID_Campeonato 
         join tb_selecoes               d with(nolock)on d.ID_Selecao = a.ID_Adversario
+
