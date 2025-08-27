@@ -32,6 +32,8 @@ as
 			, src.ID_campeonato_edicao             as ID_Campeonato_Edicao
 			, ce.Ano                               as Ano
 			, c.Descricao                          as Campeonato            
+			, isnull(a.gols, 0)                    as GA  --Gols Anfitriao            
+			, isnull(v.gols, 0)                    as GV  --Gols Visitante    
 	     from tb_jogos_selecoes          src with(nolock)
 		 join tb_campeonatos_edicoes      ce with(nolock)on ce.ID_Campeonato_Edicao = src.ID_campeonato_edicao
 		 join tb_campeonatos               c with(nolock)on c.ID_Campeonato = ce.ID_Campeonato
@@ -61,7 +63,7 @@ as
                                                         and v.ID_selecao = src.ID_selecao_visitante		
     left join (
            select ID_Jogo_Selecao
-                , ID_Selecao
+          , ID_Selecao
                 , sum(convert(int, Gol)) as Gols
              from tb_jogos_selecoes_penaltis with(nolock)
             group by ID_Jogo_Selecao, ID_Selecao
@@ -111,4 +113,5 @@ as
 			   , c.Descricao
 			   , p.Nome_Pais
                , src.Espectadores
-
+               , isnull(a.gols, 0)
+               , isnull(v.gols, 0)
