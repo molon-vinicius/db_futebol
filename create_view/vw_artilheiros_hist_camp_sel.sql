@@ -51,6 +51,32 @@ as  (
          join tb_campeonatos_edicoes          c with(nolock) on c.ID_Campeonato_Edicao = a.ID_campeonato_edicao
          join tb_campeonatos                  d with(nolock) on d.ID_Campeonato = c.ID_Campeonato
         group by b.ID_jogador_entrada
+               , d.ID_Campeonato ) ,
+
+cte_qtd_ast_anf (Assistencias, ID_Jogador, ID_Campeonato)
+as  ( 
+       select count(a.Assistencia) as Assistencias
+            , a.Assistencia        as ID_Jogador
+            , d.ID_Campeonato
+         from tb_jogos_selecoes_eventos    a with(nolock)
+         join tb_jogos_selecoes            b with(nolock)on b.ID_Jogo_Selecao = a.ID_Jogo_Selecao
+                                                        and b.ID_Selecao_Anfitriao = a.ID_Selecao
+         join tb_campeonatos_edicoes       c with(nolock)on c.ID_Campeonato_Edicao = b.ID_campeonato_edicao
+         join tb_campeonatos               d with(nolock)on d.ID_Campeonato = c.ID_Campeonato
+	    group by a.assistencia
+               , d.ID_Campeonato ) ,
+
+cte_qtd_ast_vis (Assistencias, ID_Jogador, ID_Campeonato)
+as  ( 
+       select count(a.Assistencia) as Assistencias
+            , a.Assistencia        as ID_Jogador
+            , d.ID_Campeonato
+         from tb_jogos_selecoes_eventos    a with(nolock)
+         join tb_jogos_selecoes            b with(nolock)on b.ID_Jogo_Selecao = a.ID_Jogo_Selecao
+                                                        and b.ID_Selecao_Visitante = a.ID_Selecao
+         join tb_campeonatos_edicoes       c with(nolock)on c.ID_Campeonato_Edicao = b.ID_campeonato_edicao
+         join tb_campeonatos               d with(nolock)on d.ID_Campeonato = c.ID_Campeonato
+	    group by a.assistencia
                , d.ID_Campeonato ) 
 
       select a.ID_Jogador                      as ID_Jogador
@@ -63,6 +89,8 @@ as  (
 		   + isnull(g.Jogos,0)                 
 		   + isnull(h.Jogos,0)                 as Jogos
            , count(a.ID_jogo_selecao_evento)   as Gols
+           , isnull(i.Assistencias,0)
+           + isnull(j.Assistencias,0)          as Assistencias
 		from tb_jogos_selecoes_eventos a with(nolock)
         join tb_jogos_selecoes         b with(nolock)on b.ID_jogo_selecao = a.ID_jogo_selecao
 		join vw_campeonatos            c with(nolock)on c.ID_Campeonato_Edicao = b.ID_campeonato_edicao
@@ -75,6 +103,10 @@ as  (
                                                     and g.ID_Campeonato = c.ID_Campeonato
    left join cte_qtd_jogos_subst_vis   h with(nolock)on h.ID_Jogador = a.ID_Jogador
                                                     and h.ID_Campeonato = c.ID_Campeonato
+   left join cte_qtd_ast_anf           i with(nolock)on i.ID_Jogador = a.ID_Jogador
+                                                    and i.ID_Campeonato = c.ID_Campeonato
+   left join cte_qtd_ast_vis           j with(nolock)on j.ID_Jogador = a.ID_Jogador
+                                                    and j.ID_Campeonato = c.ID_Campeonato
        where a.ID_tipo_evento in (1,5,9) --Gol, Gol de Penalti, Gol de Falta 
        group by a.ID_Jogador 
               , d.Nome_Reduzido
@@ -83,3 +115,6 @@ as  (
 		      + isnull(f.Jogos,0)
 		      + isnull(g.Jogos,0)
 		      + isnull(h.Jogos,0)
+              , isnull(i.Assistencias,0)
+		      + isnull(j.Assistencias,0)
+
