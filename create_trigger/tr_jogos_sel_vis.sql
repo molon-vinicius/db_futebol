@@ -1,145 +1,101 @@
-create trigger tr_jogos_sel_vis
-            on tb_jogos_selecoes_visitantes
-for insert, update 
- 
+create or alter trigger tr_jogos_sel_vis on tb_jogos_selecoes_visitantes
+for insert, update
 as
-
 begin
+    set nocount on;
 
-declare @id_jogo_sel   int 
-declare @qtd_jogadores int 
-declare @id_sel        int 
-declare @id_jogador    int 
+    -- 1) valida se a seleção visitante realmente participou do jogo
+    if exists (
+        select 1
+        from inserted i
+        where not exists (
+            select 1
+            from tb_jogos_selecoes js
+            where js.id_jogo_selecao = i.id_jogo_selecao
+              and js.id_selecao_visitante = i.id_selecao
+        )
+    )
+    begin
+        raiserror('Seleção visitante informada não participou da partida ou está cadastrada como seleção anfitriã.', 16, 1);
+        rollback transaction;
+        return;
+    end;
 
-       select @id_jogo_sel = ID_jogo_selecao
-            , @id_sel      = ID_selecao
-            , @id_jogador  = ID_Jogador
-         from inserted
+    -- 2) valida se o jogador pertence ao elenco da seleção visitante
+    if exists (
+        select 1
+        from inserted i
+        where not exists (
+            select 1
+            from tb_jogos_selecoes js
+            join tb_selecoes_elencos se
+              on se.id_campeonato_edicao = js.id_campeonato_edicao
+             and se.id_selecao = js.id_selecao_visitante
+             and se.id_jogador = i.id_jogador
+            where js.id_jogo_selecao = i.id_jogo_selecao
+              and js.id_selecao_visitante = i.id_selecao
+        )
+    )
+    begin
+        raiserror('Jogador não pertence à seleção visitante.', 16, 1);
+        rollback transaction;
+        return;
+    end;
 
-       select @qtd_jogadores = count(a.ID_jogador)
-         from tb_jogos_selecoes_visitantes a with(nolock)
-        where a.ID_jogo_selecao = @id_jogo_sel
-	
-if (select ID_Jogo_Selecao from deleted) is not null
-begin
-  if not exists (
-     select ID_Jogo_Selecao
-       from tb_jogos_selecoes   a with(nolock) 
-      where a.ID_jogo_selecao      = @id_jogo_sel
-        and a.ID_selecao_visitante = @id_sel
-  )
-  begin
-     raiserror ('Seleção visitante informada não participou da partida ou está cadastrada como seleção anfitriã.', 11, 127)
-     rollback transaction
-  end
+    -- 3) valida quantidade máxima de titulares
+    if exists (
+        select 1
+        from inserted i
+        cross apply (
+            select count(*) as qtde
+            from tb_jogos_selecoes_visitantes a
+            where a.id_jogo_selecao = i.id_jogo_selecao
+        ) c
+        where c.qtde > 11
+    )
+    begin
+        raiserror('Quantidade de jogadores titulares já atingida.', 16, 1);
+        rollback transaction;
+        return;
+    end;
 
-  if not exists(
-     select ID_jogador
-       from tb_jogos_selecoes    a with(nolock)
-       join tb_selecoes_elencos  b with(nolock)on b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
-                                              and b.ID_Selecao = a.ID_Selecao_Visitante
-      where a.ID_Jogo_Selecao = @id_jogo_sel
-        and a.ID_selecao_visitante = @id_sel
-        and b.ID_Jogador = @id_jogador		
-	 )
+    -- 4) valida se não há mais de um goleiro
+    if exists (
+        select 1
+        from inserted i
+        cross apply (
+            select count(*) as qtgk
+            from tb_jogos_selecoes_visitantes a
+            join tb_jogadores_posicoes p on p.id_jogador = a.id_jogador
+            where a.id_jogo_selecao = i.id_jogo_selecao
+              and p.gk = 's'
+        ) g
+        where g.qtgk > 1
+    )
+    begin
+        raiserror('Goleiro já cadastrado para o time titular.', 16, 1);
+        rollback transaction;
+        return;
+    end;
 
-  begin
-     raiserror ('Jogador não pertencente a seleção visitante.', 11, 127)
-     rollback transaction
-  end
+    -- 5) se já há 11 titulares, valida que exista pelo menos 1 goleiro
+    if exists (
+        select 1
+        from inserted i
+        cross apply (
+            select count(*) as qtde,
+                   sum(case when p.gk = 's' then 1 else 0 end) as qtgk
+            from tb_jogos_selecoes_visitantes a
+            join tb_jogadores_posicoes p on p.id_jogador = a.id_jogador
+            where a.id_jogo_selecao = i.id_jogo_selecao
+        ) t
+        where t.qtde = 11 and t.qtgk = 0
+    )
+    begin
+        raiserror('Necessário cadastrar um goleiro para o time titular.', 16, 1);
+        rollback transaction;
+        return;
+    end;
 
-  if @qtd_jogadores > 11
-  begin
-     raiserror ('Quantidade de jogadores titulares já atingida.', 11, 127)
-     rollback transaction
-  end
-
-  if @qtd_jogadores = 11
-  and (
-     select count(GK) as qtd
-       from tb_jogos_selecoes_visitantes a with(nolock)
-       join tb_jogadores_posicoes        b with(nolock)on b.ID_Jogador = a.ID_jogador
-      where a.ID_Jogo_Selecao = @id_jogo_sel 
-        and b.GK = 'S'
-     ) > 1
-  begin
-     raiserror ('Goleiro já cadastrado para o time titular.', 11, 127)
-     rollback transaction
-  end 
-
-  if @qtd_jogadores = 11
-  and (
-     select GK
-       from tb_jogos_selecoes_visitantes a with(nolock)
-       join tb_jogadores_posicoes        b with(nolock)on b.ID_Jogador = a.ID_jogador
-      where a.ID_Jogo_Selecao = @id_jogo_sel 
-        and b.GK = 'S'
-     ) is null
-  begin
-     raiserror ('Necessário cadastrar um goleiro para o time titular.', 11, 127)
-     rollback transaction
-  end 
-end
-
-if (select ID_Jogo_Selecao from deleted) is null
-begin
-  if not exists (
-     select ID_Jogo_Selecao
-       from tb_jogos_selecoes   a with(nolock) 
-      where a.ID_jogo_selecao      = @id_jogo_sel
-        and a.ID_selecao_visitante = @id_sel
-  )
-  begin
-     raiserror ('Seleção visitante informada não participou da partida ou está cadastrada como seleção anfitriã.', 11, 127)
-     rollback transaction
-  end
-
-  if not exists(
-     select ID_Jogador
-       from tb_jogos_selecoes    a with(nolock)
-       join tb_selecoes_elencos  b with(nolock)on b.ID_Campeonato_Edicao = a.ID_Campeonato_Edicao
-                                              and b.ID_Selecao = a.ID_Selecao_Visitante
-      where a.ID_Jogo_Selecao = @id_jogo_sel
-        and a.ID_selecao_visitante = @id_sel
-        and b.ID_Jogador = @id_jogador		
-	 )
-
-  begin
-     raiserror ('Jogador não pertencente a seleção visitante.', 11, 127)
-     rollback transaction
-  end
-
-  if @qtd_jogadores > 11
-  begin
-     raiserror ('Quantidade de jogadores titulares já atingida.', 11, 127)
-     rollback transaction
-  end
-
-  if @qtd_jogadores = 11
-  and (
-     select count(GK) as qtd
-       from tb_jogos_selecoes_visitantes a with(nolock)
-       join tb_jogadores_posicoes        b with(nolock)on b.ID_Jogador = a.ID_jogador
-      where a.ID_Jogo_Selecao = @id_jogo_sel 
-        and b.GK = 'S'
-     ) > 1
-  begin
-     raiserror ('Goleiro já cadastrado para o time titular.', 11, 127)
-     rollback transaction
-  end 
-
-  if @qtd_jogadores = 11
-  and (
-     select GK
-       from tb_jogos_selecoes_visitantes a with(nolock)
-       join tb_jogadores_posicoes        b with(nolock)on b.ID_Jogador = a.ID_jogador
-      where a.ID_Jogo_Selecao = @id_jogo_sel 
-        and b.GK = 'S'
-     ) is null 
-  begin  
-     raiserror ('Necessário cadastrar um goleiro para o time titular.', 11, 127)
-     rollback transaction
-  end 
-end
-
-end
+end;
+go
