@@ -8,7 +8,10 @@ as
           , x.Descricao_Completa  as campeonato
           , x.Fase
           , iif(c.ID_Selecao = x.ID_Anfitriao, Visitante, Anfitriao) as adversario
-          , a.minuto  
+          , case when a.Acrescimos is null
+                 then convert(varchar(10), a.minuto)
+                 else convert(varchar(10), convert(varchar(3), a.minuto) + '+' + convert(varchar(2),Acrescimos))
+            end               as minuto
           , iif(b.ID_tipo_evento = 1 and a.Assistencia is not null, concat(b.Descricao, ' - Assist: ', e.Nome_Reduzido), b.Descricao)       as evento  
           , c.Nome_Selecao  
           , d.Nome_Reduzido   as jogador  
