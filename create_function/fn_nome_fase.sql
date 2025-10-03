@@ -1,9 +1,9 @@
-create or alter function fn_nome_fase (@ID_Jogo_Selecao int)
+create function fn_nome_fase (@ID_Jogo_Selecao int)
 returns varchar(100)
 as
 begin
 
---declare @ID_Jogo_Selecao int = 303 --teste
+--declare @ID_Jogo_Selecao int = 16 --teste
 declare @retorno varchar(100)
 
     ;with cte as (
@@ -33,13 +33,23 @@ declare @retorno varchar(100)
         cross apply string_split(Fases, ',')
     )
 
+
     select top 1
         @retorno =  c.Descricao + ' - Grupo ' + ltrim(rtrim(b.Grupo))                    
     from fases        a
     join grupos       b on a.rn = b.rn
 	join cte          c on c.ID_Campeonato_Fase = a.Fase
-	
-    return @retorno
+
+if @retorno is null
+begin
+  select @retorno = b.Descricao
+    from tb_jogos_selecoes      a with(nolock)
+    join tb_campeonatos_fases   b with(nolock)on b.ID_Campeonato_Fase = a.ID_Campeonato_Fase
+   where a.ID_jogo_selecao = @ID_Jogo_Selecao
 
 end
-go
+	
+    return @retorno
+	
+end
+
