@@ -1,39 +1,39 @@
-create or alter view vw_jogos_selecoes
+create view vw_jogos_selecoes
 
 as
 
        select distinct
-              src.ID_jogo_selecao                  as ID_jogo_selecao 
-            , format(src.Data_Jogo, 'dd/MM/yyyy')  as Data_Jogo
+              src.ID_jogo_selecao                   as ID_jogo_selecao 
+            , format(src.Data_Jogo, 'dd/MM/yyyy')   as Data_Jogo
             , concat(ce.Ano, ' ', c.Descricao, ' - ', p.Nome_Pais ) as Descricao_Completa
-			, est.Nome_Reduzido                    as Estadio
+			, est.Nome_Reduzido                     as Estadio
             , dbo.fn_estadios_local(est.Nome_Reduzido) as Local_Estadio
-            , src.Espectadores                     as Espectadores
-			, cf.ID_Campeonato_Fase                as ID_Fase
-			, cf.Descricao                         as Fase
-			, anf.ID_Selecao                       as ID_Anfitriao
-			, anf.Nome_Selecao                     as Anfitriao
+            , src.Espectadores                      as Espectadores
+			, src.ID_Campeonato_Fase                as ID_Fase
+			, dbo.fn_nome_fase(src.ID_Jogo_Selecao) as Fase
+			, anf.ID_Selecao                        as ID_Anfitriao
+			, anf.Nome_Selecao                      as Anfitriao
             , convert(varchar(12), case when pen_anf.ID_jogo_selecao is not null
                                         then '(' + convert(varchar(3), pen_anf.Gols) + ') ' + convert(varchar(3), isnull(a.gols,0))
                                         else convert(varchar(3), isnull(a.gols,0))
-                                   end )           as Gols_Anfitriao
-			, vis.ID_Selecao                       as ID_Visitante
-			, vis.Nome_Selecao                     as Visitante
+                                   end )            as Gols_Anfitriao
+			, vis.ID_Selecao                        as ID_Visitante
+			, vis.Nome_Selecao                      as Visitante
             , convert(varchar(12), case when pen_vis.ID_jogo_selecao is not null
                                         then convert(varchar(3), isnull(v.gols,0)) + ' (' + convert(varchar(3), pen_vis.Gols) + ')'
                                         else convert(varchar(3), isnull(v.gols,0))
-                                   end )           as Gols_Visitante
-            , arb.Nome_Reduzido                    as Arbitro_Principal
-			, arb1.Nome_Reduzido                   as Auxiliar_1
-			, arb2.Nome_Reduzido                   as Auxiliar_2
-			, arb3.Nome_Reduzido                   as Auxiliar_3
-			, arb4.Nome_Reduzido                   as Auxiliar_4
-			, src.Observacao                       as Observacao
-			, src.ID_campeonato_edicao             as ID_Campeonato_Edicao
-			, ce.Ano                               as Ano
-			, c.Descricao                          as Campeonato            
-			, isnull(a.gols, 0)                    as GA  --Gols Anfitriao            
-			, isnull(v.gols, 0)                    as GV  --Gols Visitante    
+                                   end )            as Gols_Visitante
+            , arb.Nome_Reduzido                     as Arbitro_Principal
+			, arb1.Nome_Reduzido                    as Auxiliar_1
+			, arb2.Nome_Reduzido                    as Auxiliar_2
+			, arb3.Nome_Reduzido                    as Auxiliar_3
+			, arb4.Nome_Reduzido                    as Auxiliar_4
+			, src.Observacao                        as Observacao
+			, src.ID_campeonato_edicao              as ID_Campeonato_Edicao
+			, ce.Ano                                as Ano
+			, c.Descricao                           as Campeonato            
+			, isnull(a.gols, 0)                     as GA  --Gols Anfitriao            
+			, isnull(v.gols, 0)                     as GV  --Gols Visitante    
 	     from tb_jogos_selecoes          src with(nolock)
 		 join tb_campeonatos_edicoes      ce with(nolock)on ce.ID_Campeonato_Edicao = src.ID_campeonato_edicao
 		 join tb_campeonatos               c with(nolock)on c.ID_Campeonato = ce.ID_Campeonato
@@ -60,7 +60,7 @@ as
               where ID_tipo_evento in (1, 4, 5, 8, 9) -- Gol, Gol Olímpico, Gol (P), Gol Contra
               group by ID_jogo_selecao, ID_selecao
 		                                 ) v             on v.ID_jogo_selecao = src.ID_jogo_selecao
-                                                        and v.ID_selecao = src.ID_selecao_visitante		
+                                             and v.ID_selecao = src.ID_selecao_visitante		
     left join (
            select ID_Jogo_Selecao
           , ID_Selecao
@@ -88,8 +88,7 @@ as
                , concat(ce.Ano, ' ', c.Descricao, ' - ', p.Nome_Pais )
 			   , est.Nome_Reduzido
                , cest.Nome_Cidade  
-			   , cf.ID_Campeonato_Fase
-               , cf.Descricao
+			   , src.ID_Campeonato_Fase
 			   , anf.ID_Selecao
 			   , anf.Nome_Selecao
                , convert(varchar(12), case when pen_anf.ID_jogo_selecao is not null                                          
@@ -115,3 +114,4 @@ as
                , src.Espectadores
                , isnull(a.gols, 0)
                , isnull(v.gols, 0)
+
