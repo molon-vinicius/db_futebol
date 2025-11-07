@@ -83,7 +83,7 @@ begin
         from inserted i
         cross apply (
             select count(*) as qtde,
-                   sum(case when p.gk = 's' then 1 else 0 end) as qtgk
+                   sum(case when p.gk in ('p', 's') then 1 else 0 end) as qtgk
              from tb_jogos_selecoes_anfitrioes a
              join tb_jogadores_posicoes p on p.id_jogador = a.id_jogador
             where a.id_jogo_selecao = i.id_jogo_selecao
